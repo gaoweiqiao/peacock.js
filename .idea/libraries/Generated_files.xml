@@ -662,6 +662,7 @@
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/index-compiled.js" />
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/cosh/is-implemented-compiled.js" />
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/implement-compiled.js" />
+        <item url="file://$PROJECT_DIR$/src/pokerface-compiled.js" />
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/is-implemented-compiled.js" />
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/log2/implement-compiled.js" />
         <item url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/log2/shim-compiled.js" />
@@ -2343,6 +2344,7 @@
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/index-compiled.js" />
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/cosh/is-implemented-compiled.js" />
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/implement-compiled.js" />
+      <root url="file://$PROJECT_DIR$/src/pokerface-compiled.js" />
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/imul/is-implemented-compiled.js" />
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/log2/implement-compiled.js" />
       <root url="file://$PROJECT_DIR$/node_modules/es5-ext/test/math/log2/shim-compiled.js" />
