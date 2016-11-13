@@ -1,11 +1,11 @@
 /**
  * Created by patrick on 16/10/13.
  */
-window.peacock = (function(){
-
-    var peacock = {};
+window.peacock = {};
+(function(module){
+    //注册模块属性$开始
     function register(propertyName,obj){
-        Object.defineProperty(peacock,propertyName,{
+        Object.defineProperty(module,propertyName,{
             get:function(){
                 if("function" === typeof obj){
                     return obj();
@@ -15,6 +15,109 @@ window.peacock = (function(){
             }
         });
     }
+    /**
+     *  向全局对象里添加,获取,删除对象
+     **/
+    function Share(){
+
+    }
+    register("$share",new Share());
+    /**
+     *  url参数相关操作方法
+     * */
+    function Url(){
+        function getKeyValueFromUrl(queryString){
+            var queryParam = {};
+            var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
+            //
+            var kv;
+            while(kv = regex.exec(url)){
+                if(!queryParam.hasOwnProperty(kv[1])){
+                    queryParam[kv[1]] = [];
+                }
+                queryParam[kv[1]].push(decodeURI(kv[2]));
+            }
+            return queryParam;
+        }
+        var url = window.location.href;
+        var params = getKeyValueFromUrl(window.location.href.search);
+        /**
+         *  url 定义属性
+         * */
+        Object.defineProperty(this,"url",{
+            get:function(){
+                return window.location.href;
+            }
+        });
+        this.query = function(key){
+            if(url !== this.url){
+                params = getKeyValueFromUrl(this.url.search);
+            }
+            return params[key][0];
+        };
+        this.queryAll = function(key){
+            if(url !== this.url){
+                params = getKeyValueFromUrl(this.url.search);
+            }
+            return params[key];
+        };
+        /**todo:
+         *  options 包括protocol,host,port,path,params,hash
+         * */
+        this.genUrl = function(options){
+            var urlFragmentList = [];
+
+            if(options.host){
+                var protocol = options.protocol ? options.protocol+"://" : "http://";
+                var host = options.host ? options.host : "";
+                var port = options.port ? ":"+options.port : "";
+                urlFragmentList.push(protocol);
+                urlFragmentList.push(host);
+                urlFragmentList.push(port);
+            }
+            if(undefined === options.path){
+                throw new Error("path must not be undefined");
+            }else{
+                if("/" !== options.path.charAt(0)){
+                    urlFragmentList.splice(0);
+                    urlFragmentList.push(options.path);
+                }
+                (function(){
+                    var prefix = "?";
+                    for(var key in options.params){
+                        if(options.params.hasOwnProperty(key)){
+                            urlFragmentList.push(prefix);
+                            urlFragmentList.push(key);
+                            urlFragmentList.push("=");
+                            urlFragmentList.push(options.params[key]);
+                            if("?" === prefix){
+                                prefix = "&";
+                            }
+                        }
+                    }
+                }());
+                if(undefined !== options.hash){
+                    urlFragmentList.push("#");
+                    urlFragmentList.push(options.hash);
+                }
+            }
+            return urlFragmentList.join("");
+        }
+    }
+    register("$url",new Url());
+    /**
+     * 工具类
+     * */
+    function Util(){
+
+    }
+    register("$util",new Util());
+
+}(window.peacock));
+window.peacock = (function(){
+
+    var peacock = {};
+
     /**
      *  工具类
      */
@@ -34,11 +137,6 @@ window.peacock = (function(){
         return result;
     };
 
-    /**
-     *  向全局对象里添加,获取,删除对象
-     **/
-    var share = {};
-    register("$share",share);
     /**
      *  全局事件映射表
      * */
@@ -88,36 +186,6 @@ window.peacock = (function(){
         }
     };
     register("$bus",signalCenter);
-    /**
-     *  查询参数
-     * */
-    function QueryParams(paramsDict){
-        this.getQueryParam = function(name){
-            if(paramsDict.hasOwnProperty(name)){
-                return paramsDict[name][0];
-            }
-            return undefined;
-        };
-        this.getQueryParams = function(name){
-            if(paramsDict.hasOwnProperty(name)){
-                return paramsDict[name];
-            }
-            return undefined;
-        }
-    }
-    var queryParam = {
-        url: undefined,
-        params: new QueryParams()
-    };
-    function getQueryParams(){
-        if(queryParam.url !== location.href){
-            var queryString = location.search;
-            queryParam.url = location.href;
-            queryParam.params = new QueryParams(helper.getQeury(queryString));
-        }
-        return queryParam.params;
-    }
-    register("$query",getQueryParams);
     /**
      *   封装sessionStorage
      * */

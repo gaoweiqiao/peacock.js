@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id="log"></div>
+    <button id="num">0</button>
+    <button id="str">str</button>
+<script>
+    (function(){
+        var global = {name:1};
+        var numBtn = document.getElementById("num");
+
+        numBtn.addEventListener("click",function(e){
+            global = 1;
+            log();
+        });
+        var strBtn = document.getElementById("str");
+        strBtn.addEventListener("click",function(e){
+            global = "gao";
+            log();
+        });
+        function log(){
+            var logSection = document.getElementById("log");
+            logSection.innerHTML = global;
+        }
+    }());
+    (function(){
+        var demo = {name:1};
+        delete  demo.name;
+        console.log(JSON.stringify(demo));
+    }());
+</script>
+</body>
+</html>
