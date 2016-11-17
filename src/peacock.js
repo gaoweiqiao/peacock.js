@@ -110,7 +110,8 @@ window.peacock = {};
     /**
      *  log相关方法
      * */
-    function Log(){
+    function Log(a){
+        this.data = a;
         var logLevelList = ['info','log','warn','error'];
         function print(loglevel){
             return function (information){
