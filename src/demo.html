@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="peacock.js"></script>
     <title>Title</title>
 </head>
 <body>
@@ -31,6 +32,26 @@
         var demo = {name:1};
         delete  demo.name;
         console.log(JSON.stringify(demo));
+    }());
+    (function(){
+       var url = peacock.$url.genUrl({
+           protocol:"https",
+           host:"www.baidu.com",
+           path:"/index.php",
+           params:{
+               g :"app",
+               m : "Index",
+               a : "index",
+               token: "gao",
+               id: 1
+           },
+           hash:"geo"
+       });
+        console.log(url);
+//        location.href = url;
+    }());
+    (function(){
+        peacock.$log.log({name:"gao",age:18,child:[{name:"small gao",age:1}]});
     }());
 </script>
 </body>
