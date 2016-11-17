@@ -1,7 +1,7 @@
 /**
  * Created by patrick on 16/10/13.
  */
-window.peacock = {};
+window.pck = {};
 (function(module){
     //注册模块属性$开始
     var _module = {};
@@ -63,7 +63,7 @@ window.peacock = {};
             }
             return params[key];
         };
-        /**todo:
+        /**
          *  options 包括protocol,host,port,path,params,hash
          * */
         this.genUrl = function(options){
@@ -136,7 +136,7 @@ window.peacock = {};
     }
     register("$util",Util);
 
-}(window.peacock));
+}(window.pck));
 //window.peacock = (function(){
 //
 //    var peacock = {};
@@ -146,19 +146,6 @@ window.peacock = {};
 //     */
 //    var helper = {};
 //    helper.slice = Function.call.bind(Array.prototype.slice);
-//
-//    helper.getQeury = function(queryString){
-//        var result = {};
-//        var regex = /([0-9a-zA-Z%]+)=([0-9a-zA-Z%]+)/g;
-//        var kv;
-//        while(kv = regex.exec(queryString)){
-//            if(!result.hasOwnProperty(kv[1])){
-//                result[kv[1]] = [];
-//            }
-//            result[kv[1]].push(decodeURI(kv[2]));
-//        }
-//        return result;
-//    };
 //
 //    /**
 //     *  全局事件映射表
