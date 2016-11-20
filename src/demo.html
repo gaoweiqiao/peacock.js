@@ -10,49 +10,83 @@
     <button id="num">0</button>
     <button id="str">str</button>
 <script>
-    (function(){
-        var global = {name:1};
-        var numBtn = document.getElementById("num");
+//    (function(){
+//        var global = {name:1};
+//        var numBtn = document.getElementById("num");
+//
+//        numBtn.addEventListener("click",function(e){
+//            global = 1;
+//            log();
+//        });
+//        var strBtn = document.getElementById("str");
+//        strBtn.addEventListener("click",function(e){
+//            global = "gao";
+//            log();
+//        });
+//        function log(){
+//            var logSection = document.getElementById("log");
+//            logSection.innerHTML = global;
+//        }
+//    }());
+//    (function(){
+//        var demo = {name:1};
+//        delete  demo.name;
+//        console.log(JSON.stringify(demo));
+//    }());
+//    (function(){
+//       var url = peacock.$url.genUrl({
+//           protocol:"https",
+//           host:"www.baidu.com",
+//           path:"/index.php",
+//           params:{
+//               g :"app",
+//               m : "Index",
+//               a : "index",
+//               token: "gao",
+//               id: 1
+//           },
+//           hash:"geo"
+//       });
+//        console.log(url);
+////        location.href = url;
+//    }());
+//    (function(){
+//        peacock.$log.info({name:"gao",age:18,child:[{name:"small gao",age:1}]});
+//    }());
+(function(){
+    function getWordList(string,keyword){
+        var list = string.split(keyword);
+        var resultList = [];
+        for(var i=0;i < list.length; i++){
+            if("" !== list[i]){
+                resultList.push(list[i]);
+            }
+            if(list.length - 1 !== i){
+                resultList.push(keyword);
+            }
 
-        numBtn.addEventListener("click",function(e){
-            global = 1;
-            log();
-        });
-        var strBtn = document.getElementById("str");
-        strBtn.addEventListener("click",function(e){
-            global = "gao";
-            log();
-        });
-        function log(){
-            var logSection = document.getElementById("log");
-            logSection.innerHTML = global;
         }
+        return resultList;
+    }
+    (function(){
+        var origin = "2112121";
+        var words = getWordList(origin,"1");
+        console.log(origin);
+        console.log(JSON.stringify(words));
     }());
     (function(){
-        var demo = {name:1};
-        delete  demo.name;
-        console.log(JSON.stringify(demo));
+        var origin = "112311";
+        var words = getWordList(origin,"1");
+        console.log(origin);
+        console.log(JSON.stringify(words));
     }());
     (function(){
-       var url = peacock.$url.genUrl({
-           protocol:"https",
-           host:"www.baidu.com",
-           path:"/index.php",
-           params:{
-               g :"app",
-               m : "Index",
-               a : "index",
-               token: "gao",
-               id: 1
-           },
-           hash:"geo"
-       });
-        console.log(url);
-//        location.href = url;
+        var origin = "[施华蔻] 洗发水 多效护理水 600ml 水 ";
+        var words = getWordList(origin,"水");
+        console.log(origin);
+        console.log(JSON.stringify(words));
     }());
-    (function(){
-        peacock.$log.info({name:"gao",age:18,child:[{name:"small gao",age:1}]});
-    }());
+}());
 </script>
 </body>
 </html>
