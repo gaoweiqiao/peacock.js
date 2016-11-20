@@ -14,7 +14,9 @@ window.pck = {};
                     constructor.apply(_module[propertyName],params);
                 }
                 return _module[propertyName];
-            }
+            },
+            configurable:false,
+            enumerable:false
         });
     }
     /**
@@ -135,7 +137,62 @@ window.pck = {};
 
     }
     register("$util",Util);
+    /**
+     *  $Date 日期时间工具方法
+     * */
+    function DateUtil(){
+        //获取凌晨0点的Date对象
+        this.getDayBreak = function(date){
+            return new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0);
+        };
+        //增加n天,负数为减天数
+        this.addDay = function(date,delta){
+            var timestamp = date.getTime()+60*60*1000*24*delta;
+            return new Date(timestamp);
+        };
+        //
+    }
+    register("$date",DateUtil);
+    /**
+     *  $string 字符串工具方法
+     * */
+    function StringUtil(){
+        this.trim = function(string,chars){
+            var charList = [" "];
+            if(undefined !== chars){
+                charList = chars.split("");
+            }
+            //var startFinish = false;
+            //var endFinish = false;
+            (function a(){
+                var trimStart = false;
+                var trimEnd = false;
+                for(var i=0;i<charList.length;i++){
+                    if(string[0] === charList[i]){
+                        trimStart = true;
+                    }
+                    if(string[string.length - 1] === charList[i]){
+                        trimEnd = true;
+                    }
+                }
+                var sliceStart = 0;
+                var sliceEnd = string.length;
+                if(trimStart){
+                    sliceStart = 1;
+                }
+                if(trimEnd){
+                    sliceEnd--;
+                }
+                if(trimStart || trimEnd){
+                    string = string.slice(sliceStart,sliceEnd);
+                    a();
+                }
+            }());
+            return string;
 
+        }
+    }
+    register("$string",StringUtil);
 }(window.pck));
 //window.peacock = (function(){
 //
