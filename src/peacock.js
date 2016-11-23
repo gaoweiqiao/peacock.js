@@ -138,6 +138,15 @@ window.pck = {};
     }
     register("$util",Util);
     /**
+     *  $object对象工具函数
+     * */
+    function objectUtil(){
+        this.isNil = function(obj){
+            return undefined === object || null === obj;
+        };
+    }
+    register("$object",objectUtil);
+    /**
      *  $Date 日期时间工具方法
      * */
     function DateUtil(){
@@ -150,7 +159,7 @@ window.pck = {};
             var timestamp = date.getTime()+60*60*1000*24*delta;
             return new Date(timestamp);
         };
-        //
+        //格式化日期
         this.format = function(template,date,padLeft){
             if(!isNaN(date)){
                 date = new Date(date);
@@ -239,30 +248,80 @@ window.pck = {};
             }
             return list.join("");
         };
-        this.padLeft = function(string,length,chars){
+        //填充两边
+        this.padBoth = function padBase(string,leftPadCount,rightPadCount,chars){
             if(undefined === chars || "" === chars){
                 chars = " ";
             }
-            if(length > string.length){
-                var resultStringList = [];
-                var repeatCount = Math.floor((length - string.length) / string.length);
-                var restCharCount = length % string.length;
-                resultStringList.push(this.repeat(chars,repeatCount));
-                resultStringList.push(chars.slice(0,restCharCount));
-                resultStringList.push(string);
-                return resultStringList.join("");
+            if(0 === leftPadCount && 0 === rightPadCount){
+                return string;
             }
-            return string;
-        }
+            //
+            var resultStringList = [];
+            if(leftPadCount > 0){
+                var leftRepeatCount = Math.floor(leftPadCount / chars.length);
+                var leftRestCharCount = leftPadCount % chars.length;
+                resultStringList.push(this.repeat(chars,leftRepeatCount));
+                resultStringList.push(chars.slice(0,leftRestCharCount));
+            }
+            resultStringList.push(string);
+            if(rightPadCount > 0){
+                var rightRepeatCount = Math.floor(rightPadCount / chars.length);
+                var rightRestCharCount = rightPadCount % chars.length;
+                resultStringList.push(this.repeat(chars,rightRepeatCount));
+                resultStringList.push(chars.slice(0,rightRestCharCount));
+            }
+
+            return resultStringList.join("");
+
+        };
+        //填充左边
+        this.padLeft = function(string,length,chars){
+            var leftPadCount = 0;
+            if(length > string.length){
+                leftPadCount = length - string.length;
+            }
+            return this.padBoth(string,leftPadCount,0,chars);
+        };
+        //填充右边
+        this.padRight = function(string,length,chars){
+            var rightPadCount = 0;
+            if(length > string.length){
+                rightPadCount = length - string.length;
+            }
+            return this.padBoth(string,0,rightPadCount,chars);
+        };
+        //近似均匀地填充两边
+        this.pad = function(string,length,chars){
+            var leftPadCount = 0;
+            var rightPadCount = 0;
+            if(length > string.length){
+                var totalPadCount = length - string.length;
+                leftPadCount = Math.floor(totalPadCount/2);
+                rightPadCount = totalPadCount-leftPadCount;
+            }
+            return this.padBoth(string,leftPadCount,rightPadCount,chars);
+        };
     }
     register("$string",StringUtil);
     /**
      *  $number 数字方法
      * */
     function NumberUtil(){
-
+        //判断是不是整数
+        this.isInteger = function(i){
+            return (!isNaN(i)) && Math.floor(i) === i;
+        }
     }
     register("$number",NumberUtil);
+    /**
+     *  $array 数组方法
+     * */
+    function ArrayUtil(){
+        this.slice = Function.call.bind(Array.prototype.slice);
+        this.forEach = Function.call.bind(Array.prototype.forEach);
+    }
+    register("$array",ArrayUtil);
 }(window.pck));
 //window.peacock = (function(){
 //
@@ -272,7 +331,6 @@ window.pck = {};
 //     *  工具类
 //     */
 //    var helper = {};
-//    helper.slice = Function.call.bind(Array.prototype.slice);
 //
 //    /**
 //     *  全局事件映射表
