@@ -151,12 +151,49 @@ window.pck = {};
             return new Date(timestamp);
         };
         //
+        this.format = function(template,date,padLeft){
+            if(!isNaN(date)){
+                date = new Date(date);
+            }
+            var regex = /(yyyy|MM|dd|HH|mm|ss|z)/g;
+            var dateStringList = [];
+            var lastIndex = 0;
+            var dateComponent = null;
+            var stringUtil = new StringUtil();
+            function padLeftDate(n,repeatCount){
+                if(padLeft){
+                    stringUtil.padLeft(n+"",repeatCount,"0")
+                }
+                return n;
+            }
+            while(dateComponent = regex.exec(template)){
+                dateStringList.push(template.slice(lastIndex,dateComponent.index));
+                if("yyyy" === dateComponent[0]){
+                    dateStringList.push(date.getFullYear());
+                }else if("MM" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getMonth()+1));
+                }else if("dd" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getDate()));
+                }else if("HH" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getHours()));
+                }else if("mm" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getMinutes()));
+                }else if("ss" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getSeconds()));
+                }else if("z" === dateComponent[0]){
+                    dateStringList.push(padLeftDate(date.getMilliseconds()));
+                }
+                lastIndex = dateComponent.index+dateComponent[0].length;
+            }
+            return dateStringList.join("");
+        }
     }
     register("$date",DateUtil);
     /**
      *  $string 字符串工具方法
      * */
     function StringUtil(){
+        //删除字符串两边的指定字符
         this.trim = function(string,chars){
             var charList = [" "];
             if(undefined !== chars){
@@ -190,9 +227,42 @@ window.pck = {};
             }());
             return string;
 
+        };
+        //重复n次字符串
+        this.repeat = function(string,repeatCount){
+            var list = [];
+            if(repeatCount < 2){
+                return string;
+            }
+            for(var i=0;i< repeatCount;i++){
+                list.push(string);
+            }
+            return list.join("");
+        };
+        this.padLeft = function(string,length,chars){
+            if(undefined === chars || "" === chars){
+                chars = " ";
+            }
+            if(length > string.length){
+                var resultStringList = [];
+                var repeatCount = Math.floor((length - string.length) / string.length);
+                var restCharCount = length % string.length;
+                resultStringList.push(this.repeat(chars,repeatCount));
+                resultStringList.push(chars.slice(0,restCharCount));
+                resultStringList.push(string);
+                return resultStringList.join("");
+            }
+            return string;
         }
     }
     register("$string",StringUtil);
+    /**
+     *  $number 数字方法
+     * */
+    function NumberUtil(){
+
+    }
+    register("$number",NumberUtil);
 }(window.pck));
 //window.peacock = (function(){
 //

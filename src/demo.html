@@ -53,43 +53,49 @@
 //    (function(){
 //        peacock.$log.info({name:"gao",age:18,child:[{name:"small gao",age:1}]});
 //    }());
+//(function(){
+//    function getWordList(string,keyword){
+//        var list = string.split(keyword);
+//        var resultList = [];
+//        for(var i=0;i < list.length; i++){
+//            if("" !== list[i]){
+//                resultList.push(list[i]);
+//            }
+//            if(list.length - 1 !== i){
+//                resultList.push(keyword);
+//            }
+//
+//        }
+//        return resultList;
+//    }
+//    (function(){
+//        var origin = "2112121";
+//        var words = getWordList(origin,"1");
+//        console.log(origin);
+//        console.log(JSON.stringify(words));
+//    }());
+//    (function(){
+//        var origin = "112311";
+//        var words = getWordList(origin,"1");
+//        console.log(origin);
+//        console.log(JSON.stringify(words));
+//    }());
+//    (function(){
+//        var origin = "[施华蔻] 洗发水 多效护理水 600ml 水 ";
+//        var words = getWordList(origin,"水");
+//        console.log(origin);
+//        console.log(JSON.stringify(words));
+//    }());
+//    (function(){
+//        var s = "-_-g-_-";
+//        console.log(pck.$string.trim(s,"_-"));
+//    }());
+//}());
 (function(){
-    function getWordList(string,keyword){
-        var list = string.split(keyword);
-        var resultList = [];
-        for(var i=0;i < list.length; i++){
-            if("" !== list[i]){
-                resultList.push(list[i]);
-            }
-            if(list.length - 1 !== i){
-                resultList.push(keyword);
-            }
-
-        }
-        return resultList;
-    }
-    (function(){
-        var origin = "2112121";
-        var words = getWordList(origin,"1");
-        console.log(origin);
-        console.log(JSON.stringify(words));
-    }());
-    (function(){
-        var origin = "112311";
-        var words = getWordList(origin,"1");
-        console.log(origin);
-        console.log(JSON.stringify(words));
-    }());
-    (function(){
-        var origin = "[施华蔻] 洗发水 多效护理水 600ml 水 ";
-        var words = getWordList(origin,"水");
-        console.log(origin);
-        console.log(JSON.stringify(words));
-    }());
-    (function(){
-        var s = "-_-g-_-";
-        console.log(pck.$string.trim(s,"_-"));
-    }());
+    var date = new Date();
+    date.setSeconds(1);
+    var dateString = pck.$date.format("yyyy-MM-dd HH:mm:ss z",date);
+    console.log(dateString);
 }());
 </script>
 </body>
