@@ -326,7 +326,6 @@ window.pck = {};
 //window.peacock = (function(){
 //
 //    var peacock = {};
-//
 //    /**
 //     *  工具类
 //     */
