@@ -302,6 +302,23 @@ window.pck = {};
             }
             return this.padBoth(string,leftPadCount,rightPadCount,chars);
         };
+        //渲染模板函数:{{}}
+        this.render = function(template,data){
+            var regex = /(\{\{\s*(.*)\s*\}\})/g;
+            var resultStringList = [];
+            var result = null;
+            var lastIndex = 0;
+            while(result = regex.exec(template)){
+                resultStringList.push(template.slice(lastIndex,result.index));
+                var key = result[1];
+                resultStringList.push(data[key]);
+                lastIndex = result.index + result[1].length;
+            }
+            if(template.length - 1 > lastIndex){
+                resultStringList.push(template.slice(lastIndex,template.length));
+            }
+            return resultStringList.join("");
+        }
     }
     register("$string",StringUtil);
     /**

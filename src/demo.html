@@ -97,11 +97,17 @@
 //    var dateString = pck.$date.format("yyyy-MM-dd HH:mm z",date);
 //    console.log(dateString);
 //}());
+//(function(){
+//    console.log(pck.$string.pad("1",10,"a"));
+//    console.log(pck.$string.padLeft("1",10,"a"));
+//    console.log(pck.$string.padRight("1",10,"a"));
+//    console.log(pck.$string.padBoth("1",1,3,"a"));
+//}());
 (function(){
-    console.log(pck.$string.pad("1",10,"a"));
-    console.log(pck.$string.padLeft("1",10,"a"));
-    console.log(pck.$string.padRight("1",10,"a"));
-    console.log(pck.$string.padBoth("1",1,3,"a"));
+    var template = "my name is {{name}}.";
+    var data = {"name":"gao"};
+    var result = pck.$string.render(template,data);
+    pck.$log.log(result);
 }());
 </script>
 </body>
