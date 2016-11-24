@@ -104,11 +104,39 @@
 //    console.log(pck.$string.padBoth("1",1,3,"a"));
 //}());
 (function(){
-    var template = "my name is {{name}}.";
-    var data = {"name":"gao"};
+    var template = "my name is {{  name    }}.";
+    var data = {
+        name:"gao",
+        teacher:{
+            name:"songbo",
+            teacher:{
+                name:"yuange"
+            }
+        }
+    };
     var result = pck.$string.render(template,data);
     pck.$log.log(result);
 }());
+(function(){
+    var obj = {
+        name:"gao",
+        teacher:{
+            name:"songbo",
+            teacher:{
+                name:"yuange"
+            }
+        }
+    };
+    var result = pck.$object.setKeyPath(obj,"teacher['teacher'].name","god");
+    pck.$log.log(result);
+}());
+    var A = function (){
+        this.asset = function(){
+            console.log("this.constructor === A is "+this.constructor.name);
+        }
+    };
+    new A().asset();
+    pck.$object.getGao();
 </script>
 </body>
 </html>

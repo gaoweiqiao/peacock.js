@@ -53,13 +53,13 @@ window.pck = {};
                 return window.location.href;
             }
         });
-        this.query = function(key){
+        this.constructor.prototype.query = function(key){
             if(url !== this.url){
                 params = getKeyValueFromUrl(this.url.search);
             }
             return params[key][0];
         };
-        this.queryAll = function(key){
+        this.constructor.prototype.queryAll = function(key){
             if(url !== this.url){
                 params = getKeyValueFromUrl(this.url.search);
             }
@@ -68,7 +68,7 @@ window.pck = {};
         /**
          *  options 包括protocol,host,port,path,params,hash
          * */
-        this.genUrl = function(options){
+        this.constructor.prototype.genUrl = function(options){
             var urlFragmentList = [];
 
             if(options.host){
@@ -126,7 +126,7 @@ window.pck = {};
 
         }
         for(var i=0;i<logLevelList.length;i++){
-            this[logLevelList[i]] = print(logLevelList[i]);
+            this.constructor.prototype[logLevelList[i]] = print(logLevelList[i]);
         }
     }
     register("$log",Log);
@@ -140,27 +140,76 @@ window.pck = {};
     /**
      *  $object对象工具函数
      * */
-    function objectUtil(){
-        this.isNil = function(obj){
+    function ObjectUtil(){
+        this.constructor.prototype.isNil = function(obj){
             return undefined === object || null === obj;
         };
+        this.constructor.prototype.keyPath = function(keyPath){
+            var regex = /(?:\.([^\.\[\'\"\]]+)|\['([^\.\[\'\"\]]+)\']|\["([^\.\[\'\"\]]+)"\])/g;
+            var pathList = [];
+            var result = null;
+            while(result = regex.exec("."+keyPath)){
+                (function(){
+                    for(var i=1;i<result.length;i++){
+                        if(undefined !== result[i]){
+                            pathList.push(result[i]);
+                            break;
+                        }
+                    }
+                }());
+            }
+            return pathList;
+        };
+        this.constructor.prototype.getKeyPath = function(obj,keyPath){
+            //
+            if(null === obj || undefined === obj || "object" !== typeof obj){
+                return obj;
+            }
+            //
+            var pathList = this.keyPath(keyPath);
+            for(var i=0;i<pathList.length;i++){
+                obj = obj[pathList[i]];
+                if(undefined === obj){
+                    break
+                }
+            }
+            return obj;
+        };
+        this.constructor.prototype.setKeyPath = function(obj,keyPath,value){
+            if(null === obj || undefined === obj || "object" !== typeof obj){
+                return obj;
+            }
+            var pathList = this.keyPath(keyPath);
+            var prop = obj;
+            for(var i=0;i<pathList.length;i++){
+                prop = prop[pathList[i]];
+                if(pathList.length - 2 !== i){
+                    if(undefined === prop){
+                        break;
+                    }
+                }else{
+                    prop[pathList[i+1]] = value;
+                }
+            }
+            return obj;
+        };
     }
-    register("$object",objectUtil);
+    register("$object",ObjectUtil);
     /**
      *  $Date 日期时间工具方法
      * */
     function DateUtil(){
         //获取凌晨0点的Date对象
-        this.getDayBreak = function(date){
+        this.constructor.prototype.getDayBreak = function(date){
             return new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0);
         };
         //增加n天,负数为减天数
-        this.addDay = function(date,delta){
+        this.constructor.prototype.addDay = function(date,delta){
             var timestamp = date.getTime()+60*60*1000*24*delta;
             return new Date(timestamp);
         };
         //格式化日期
-        this.format = function(template,date,padLeft){
+        this.constructor.prototype.format = function(template,date,padLeft){
             if(!isNaN(date)){
                 date = new Date(date);
             }
@@ -203,7 +252,7 @@ window.pck = {};
      * */
     function StringUtil(){
         //删除字符串两边的指定字符
-        this.trim = function(string,chars){
+        this.constructor.prototype.trim = function(string,chars){
             var charList = [" "];
             if(undefined !== chars){
                 charList = chars.split("");
@@ -238,7 +287,7 @@ window.pck = {};
 
         };
         //重复n次字符串
-        this.repeat = function(string,repeatCount){
+        this.constructor.prototype.repeat = function(string,repeatCount){
             var list = [];
             if(repeatCount < 2){
                 return string;
@@ -249,7 +298,7 @@ window.pck = {};
             return list.join("");
         };
         //填充两边
-        this.padBoth = function padBase(string,leftPadCount,rightPadCount,chars){
+        this.constructor.prototype.padBoth = function padBase(string,leftPadCount,rightPadCount,chars){
             if(undefined === chars || "" === chars){
                 chars = " ";
             }
@@ -276,7 +325,7 @@ window.pck = {};
 
         };
         //填充左边
-        this.padLeft = function(string,length,chars){
+        this.constructor.prototype.padLeft = function(string,length,chars){
             var leftPadCount = 0;
             if(length > string.length){
                 leftPadCount = length - string.length;
@@ -284,7 +333,7 @@ window.pck = {};
             return this.padBoth(string,leftPadCount,0,chars);
         };
         //填充右边
-        this.padRight = function(string,length,chars){
+        this.constructor.prototype.padRight = function(string,length,chars){
             var rightPadCount = 0;
             if(length > string.length){
                 rightPadCount = length - string.length;
@@ -292,7 +341,7 @@ window.pck = {};
             return this.padBoth(string,0,rightPadCount,chars);
         };
         //近似均匀地填充两边
-        this.pad = function(string,length,chars){
+        this.constructor.prototype.pad = function(string,length,chars){
             var leftPadCount = 0;
             var rightPadCount = 0;
             if(length > string.length){
@@ -303,15 +352,20 @@ window.pck = {};
             return this.padBoth(string,leftPadCount,rightPadCount,chars);
         };
         //渲染模板函数:{{}}
-        this.render = function(template,data){
-            var regex = /(\{\{\s*(.*)\s*\}\})/g;
+        this.constructor.prototype.render = function(template,data){
+            var regex = /(\{\{\s*(\S*)\s*\}\})/g;
             var resultStringList = [];
             var result = null;
             var lastIndex = 0;
             while(result = regex.exec(template)){
                 resultStringList.push(template.slice(lastIndex,result.index));
-                var key = result[1];
-                resultStringList.push(data[key]);
+                var key = result[2];
+                if("{{" === key || "}}" === key || "{" ===key || "}" === key){
+                    resultStringList.push(key);
+                }else{
+                    resultStringList.push(new ObjectUtil().getKeyPath(data,key));
+                }
+
                 lastIndex = result.index + result[1].length;
             }
             if(template.length - 1 > lastIndex){
@@ -326,7 +380,7 @@ window.pck = {};
      * */
     function NumberUtil(){
         //判断是不是整数
-        this.isInteger = function(i){
+        this.constructor.prototype.isInteger = function(i){
             return (!isNaN(i)) && Math.floor(i) === i;
         }
     }
@@ -335,8 +389,8 @@ window.pck = {};
      *  $array 数组方法
      * */
     function ArrayUtil(){
-        this.slice = Function.call.bind(Array.prototype.slice);
-        this.forEach = Function.call.bind(Array.prototype.forEach);
+        this.constructor.prototype.slice = Function.call.bind(Array.prototype.slice);
+        this.constructor.prototype.forEach = Function.call.bind(Array.prototype.forEach);
     }
     register("$array",ArrayUtil);
 }(window.pck));
