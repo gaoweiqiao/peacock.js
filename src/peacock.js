@@ -159,6 +159,7 @@ window.pck = {};
         }
         func.apply(scope,paramList);
     };
+
     /**
      * 工具类
      * */
