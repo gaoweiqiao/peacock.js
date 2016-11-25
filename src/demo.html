@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <script src="peacock.js"></script>
+    <script src="unitTest.js"></script>
     <title>Title</title>
 </head>
 <body>
@@ -130,13 +131,6 @@
     var result = pck.$object.setKeyPath(obj,"teacher['teacher'].name","god");
     pck.$log.log(result);
 }());
-    var A = function (){
-        this.asset = function(){
-            console.log("this.constructor === A is "+this.constructor.name);
-        }
-    };
-    new A().asset();
-    pck.$object.getGao();
 </script>
 </body>
 </html>

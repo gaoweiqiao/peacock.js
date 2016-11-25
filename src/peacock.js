@@ -131,6 +131,35 @@ window.pck = {};
     }
     register("$log",Log);
     /**
+     *   依赖注入
+     * */
+    var _dependencies = {};
+    module.module = function(name,constructor){
+        if (undefined !== _dependencies[name]){
+            throw new Error("this name has been registred.");
+        }else {
+            if("function" === typeof constructor){
+                _dependencies[name] = {};
+                var params = Array.prototype.slice.call(arguments,2);
+                constructor.apply(_dependencies[name],params);
+            }else{
+                _dependencies[name] = constructor;
+            }
+        }
+    };
+    module.inject = function(deps,func,scope){
+        var paramList = [];
+        for(var i=0;i<deps.length;i++){
+            var paramName = deps[i];
+            var param = _dependencies[paramName];
+            if(undefined === param){
+                throw new Error(paramName+' is not found. you must register it before using it.');
+            }
+            paramList.push(param);
+        }
+        func.apply(scope,paramList);
+    };
+    /**
      * 工具类
      * */
     function Util(){
@@ -393,6 +422,7 @@ window.pck = {};
         this.constructor.prototype.forEach = Function.call.bind(Array.prototype.forEach);
     }
     register("$array",ArrayUtil);
+
 }(window.pck));
 //window.peacock = (function(){
 //
