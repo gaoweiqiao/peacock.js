@@ -57,7 +57,10 @@ window.pck = {};
             if(url !== this.url){
                 params = getKeyValueFromUrl(this.url.search);
             }
-            return params[key][0];
+            if(undefined !== params[key] && params[key].length > 0){
+                return params[key][0];
+            }
+            return undefined;
         };
         this.constructor.prototype.queryAll = function(key){
             if(url !== this.url){
