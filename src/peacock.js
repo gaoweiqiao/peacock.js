@@ -137,16 +137,16 @@ window.pck = {};
      *   依赖注入
      * */
     var _dependencies = {};
-    module.module = function(name,constructor){
+    module.module = function(name,initialization){
         if (undefined !== _dependencies[name]){
             throw new Error("this name has been registred.");
         }else {
-            if("function" === typeof constructor){
+            if("function" === typeof initialization){
                 _dependencies[name] = {};
                 var params = Array.prototype.slice.call(arguments,2);
-                constructor.apply(_dependencies[name],params);
+                initialization.apply(_dependencies[name],params);
             }else{
-                _dependencies[name] = constructor;
+                _dependencies[name] = initialization;
             }
         }
     };
