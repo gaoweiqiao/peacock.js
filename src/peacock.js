@@ -134,36 +134,6 @@ window.pck = {};
     }
     register("$log",Log);
     /**
-     *   依赖注入
-     * */
-    var _dependencies = {};
-    module.module = function(name,initialization){
-        if (undefined !== _dependencies[name]){
-            throw new Error("this name has been registred.");
-        }else {
-            if("function" === typeof initialization){
-                _dependencies[name] = {};
-                var params = Array.prototype.slice.call(arguments,2);
-                initialization.apply(_dependencies[name],params);
-            }else{
-                _dependencies[name] = initialization;
-            }
-        }
-    };
-    module.inject = function(deps,func,scope){
-        var paramList = [];
-        for(var i=0;i<deps.length;i++){
-            var paramName = deps[i];
-            var param = _dependencies[paramName];
-            if(undefined === param){
-                throw new Error(paramName+' is not found. you must register it before using it.');
-            }
-            paramList.push(param);
-        }
-        func.apply(scope,paramList);
-    };
-
-    /**
      * 工具类
      * */
     function Util(){
@@ -176,6 +146,9 @@ window.pck = {};
     function ObjectUtil(){
         this.constructor.prototype.isNil = function(obj){
             return undefined === object || null === obj;
+        };
+        this.constructor.prototype.isFunction = function(func){
+            return 'function' === typeof func;
         };
         this.constructor.prototype.keyPath = function(keyPath){
             var regex = /(?:\.([^\.\[\'\"\]]+)|\['([^\.\[\'\"\]]+)\']|\["([^\.\[\'\"\]]+)"\])/g;
@@ -226,6 +199,49 @@ window.pck = {};
             }
             return obj;
         };
+        this.constructor.prototype.getValue = function(objOrFunction){
+            if(this.isFunction(objOrFunction)){
+                return objOrFunction();
+            }
+            return objOrFunction;
+        };
+        //转换属性名 todo:测试
+        this.constructor.prototype.casify = function(obj,convert){
+            if ('object' === typeof obj){
+                for(var name in obj){
+                    if(obj.hasOwnProperty(name)) {
+                        var casedName = convert(name);
+                        if (Array.isArray(obj)) {
+                            for (var i = 0; i < obj.length; i++) {
+                                this.casify(obj[i], convert);
+                            }
+                        }else{
+                            this.casify(obj[name], convert);
+                            (function (){
+                                var originalName = name;
+                                var convertedName = casedName;
+                                if (originalName !== convertedName) {
+                                    Object.defineProperty(obj, convertedName, {
+                                        set: function (value) {
+                                            obj[originalName] = value;
+                                        },
+                                        get: function () {
+                                            return obj[originalName];
+                                        }
+                                    });
+                                }
+                            }());
+                        }
+                    }
+                }
+            }
+
+        };
+        this.constructor.prototype.camelCasing = function(obj){
+            this.casify(obj,function(name){
+
+            });
+        }
     }
     register("$object",ObjectUtil);
     /**
@@ -405,7 +421,11 @@ window.pck = {};
                 resultStringList.push(template.slice(lastIndex,template.length));
             }
             return resultStringList.join("");
-        }
+        };
+        //转变为驼峰标识
+        this.constructor.prototype.camelCasify = function(word){
+            var regex = /[a-zA-Z]/ig
+        };
     }
     register("$string",StringUtil);
     /**
@@ -426,7 +446,86 @@ window.pck = {};
         this.constructor.prototype.forEach = Function.call.bind(Array.prototype.forEach);
     }
     register("$array",ArrayUtil);
+    /**
+     *   依赖注入
+     * */
+    var _dependencies = {};
+    module.register = function(name,obj){
+        if (undefined === _dependencies[name]){
+            _dependencies[name] = obj;
+        }else{
+            throw new Error(['duplicate name ',name].join(''));
+        }
+    };
+    module.config = function(config){
+        if('function' === typeof config){
+            config = config();
+        }
+        if('object' === typeof config && (!Array.isArray(config))){
+            for(var name in config){
+                if(config.hasOwnProperty(name)){
+                    module.register(name,config[name])
+                }
+            }
+        }else{
+            throw new Error('config must be a object or a function which return object.');
+        }
+    };
+    /**
+     *  config是配置的,module.config是全局注入的,临时配置会覆盖全局配置
+     *  有run(config,deps,injection)和run(deps,injection)两种形式,其中config可以是function或object
+     * */
+    module.run = function(){
+        var config = undefined;
+        var dependence = [];
+        var injection;
+        //
+        if(1 === arguments.length){
+            injection = arguments[0];
+        }else if(2 === arguments.length){
+            dependence = arguments[0];
+            injection = arguments[1];
+        }else if(arguments.length > 3){
+            config = new ObjectUtil().getValue(arguments[0]);
+            dependence = arguments[1];
+            injection = arguments[2];
+        }else{
+            throw new Error("this method must pass a argument at least.")
+        }
 
+        //if(Array.isArray(arguments[0])){
+        //    dependence = arguments[0];
+        //    injection = arguments[1];
+        //}else if('object' === typeof arguments[0]){
+        //    config = arguments[0];
+        //    dependence = arguments[1];
+        //    injection = arguments[2];
+        //}else {
+        //    throw new Error('config is valid');
+        //}
+        if('function' !== typeof injection){
+            throw new Error('injection is not a function');
+        }
+        //检查完毕
+        var paramList = [];
+        for(var i=0;i<dependence.length;i++){
+            var paramName = dependence[i];
+            var param = undefined === config ? _dependencies[paramName] : (config[paramName] && _dependencies[paramName]);
+            if(undefined === param){
+                throw new Error(paramName+' is not found. you must register it before using it.');
+            }
+            paramList.push(param);
+        }
+        injection.apply(undefined,paramList);
+    };
+    /**
+     *  继承
+     * */
+    module.extends = function(Child,Parent){        var F = function () {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.prototype.constructor = Child;
+    };
 }(window.pck));
 //window.peacock = (function(){
 //
@@ -594,5 +693,6 @@ window.pck = {};
 //    return peacock;
 //
 //}());
+
 
 

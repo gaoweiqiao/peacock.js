@@ -104,33 +104,50 @@
 //    console.log(pck.$string.padRight("1",10,"a"));
 //    console.log(pck.$string.padBoth("1",1,3,"a"));
 //}());
-(function(){
-    var template = "my name is {{  name    }}.";
-    var data = {
-        name:"gao",
-        teacher:{
-            name:"songbo",
-            teacher:{
-                name:"yuange"
+//(function(){
+//    var template = "my name is {{  name    }}.";
+//    var data = {
+//        name:"gao",
+//        teacher:{
+//            name:"songbo",
+//            teacher:{
+//                name:"yuange"
+//            }
+//        }
+//    };
+//    var result = pck.$string.render(template,data);
+//    pck.$log.log(result);
+//}());
+//(function(){
+//    var obj = {
+//        name:"gao",
+//        teacher:{
+//            name:"songbo",
+//            teacher:{
+//                name:"yuange"
+//            }
+//        }
+//    };
+//    var result = pck.$object.setKeyPath(obj,"teacher['teacher'].name","god");
+//    pck.$log.log(result);
+//}());
+    pck.config({
+        '$object':pck.$object
+    });
+    pck.run(['$object'],function($object){
+        var member = {
+            'member_id':"gao",
+            'age':12,
+            'teacher_name':{
+                'member_name':"songbo",
+                'birth_day':1
             }
-        }
-    };
-    var result = pck.$string.render(template,data);
-    pck.$log.log(result);
-}());
-(function(){
-    var obj = {
-        name:"gao",
-        teacher:{
-            name:"songbo",
-            teacher:{
-                name:"yuange"
-            }
-        }
-    };
-    var result = pck.$object.setKeyPath(obj,"teacher['teacher'].name","god");
-    pck.$log.log(result);
-}());
+        };
+        $object.casify(member,function(name){
+            return name.replace("_",'');
+        });
+        console.log(member.memberid);
+    });
 </script>
 </body>
 </html>
