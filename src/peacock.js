@@ -29,20 +29,74 @@ window.pck = {};
     /**
      *  url参数相关操作方法
      * */
-    function Url(){
-        function getKeyValueFromUrl(queryString){
-            var queryParam = {};
-            var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
-            //
-            var kv;
-            while(kv = regex.exec(url)){
-                if(!queryParam.hasOwnProperty(kv[1])){
-                    queryParam[kv[1]] = [];
-                }
-                queryParam[kv[1]].push(decodeURI(kv[2]));
+    function getKeyValueFromUrl(queryString){
+        var queryParam = {};
+        var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
+        //
+        var kv;
+        while(kv = regex.exec(url)){
+            if(!queryParam.hasOwnProperty(kv[1])){
+                queryParam[kv[1]] = [];
             }
-            return queryParam;
+            queryParam[kv[1]].push(decodeURI(kv[2]));
         }
+        return queryParam;
+    }
+    var query = function(key){
+        if(url !== this.url){
+            params = getKeyValueFromUrl(this.url.search);
+        }
+        if(undefined !== params[key] && params[key].length > 0){
+            return params[key][0];
+        }
+        return undefined;
+    };
+    var queryAll = function(key){
+        if(url !== this.url){
+            params = getKeyValueFromUrl(this.url.search);
+        }
+        return params[key];
+    };
+    var genUrl = function(options){
+        var urlFragmentList = [];
+
+        if(options.host){
+            var protocol = options.protocol ? options.protocol+"://" : "http://";
+            var host = options.host ? options.host : "";
+            var port = options.port ? ":"+options.port : "";
+            urlFragmentList.push(protocol);
+            urlFragmentList.push(host);
+            urlFragmentList.push(port);
+        }
+        if(undefined === options.path){
+            throw new Error("path must not be undefined");
+        }else{
+            if("/" !== options.path.charAt(0)){
+                urlFragmentList.splice(0);
+            }
+            urlFragmentList.push(options.path);
+            (function(){
+                var prefix = "?";
+                for(var key in options.params){
+                    if(options.params.hasOwnProperty(key)){
+                        urlFragmentList.push(prefix);
+                        urlFragmentList.push(key);
+                        urlFragmentList.push("=");
+                        urlFragmentList.push(options.params[key]);
+                        if("?" === prefix){
+                            prefix = "&";
+                        }
+                    }
+                }
+            }());
+            if(undefined !== options.hash){
+                urlFragmentList.push("#");
+                urlFragmentList.push(options.hash);
+            }
+        }
+        return urlFragmentList.join("");
+    };
+    function Url(){
         var url = window.location.href;
         var params = getKeyValueFromUrl(window.location.href.search);
         /**
@@ -53,83 +107,31 @@ window.pck = {};
                 return window.location.href;
             }
         });
-        this.constructor.prototype.query = function(key){
-            if(url !== this.url){
-                params = getKeyValueFromUrl(this.url.search);
-            }
-            if(undefined !== params[key] && params[key].length > 0){
-                return params[key][0];
-            }
-            return undefined;
-        };
-        this.constructor.prototype.queryAll = function(key){
-            if(url !== this.url){
-                params = getKeyValueFromUrl(this.url.search);
-            }
-            return params[key];
-        };
+        this.constructor.prototype.query = query;
+        this.constructor.prototype.queryAll = queryAll;
         /**
          *  options 包括protocol,host,port,path,params,hash
          * */
-        this.constructor.prototype.genUrl = function(options){
-            var urlFragmentList = [];
-
-            if(options.host){
-                var protocol = options.protocol ? options.protocol+"://" : "http://";
-                var host = options.host ? options.host : "";
-                var port = options.port ? ":"+options.port : "";
-                urlFragmentList.push(protocol);
-                urlFragmentList.push(host);
-                urlFragmentList.push(port);
-            }
-            if(undefined === options.path){
-                throw new Error("path must not be undefined");
-            }else{
-                if("/" !== options.path.charAt(0)){
-                    urlFragmentList.splice(0);
-                }
-                urlFragmentList.push(options.path);
-                (function(){
-                    var prefix = "?";
-                    for(var key in options.params){
-                        if(options.params.hasOwnProperty(key)){
-                            urlFragmentList.push(prefix);
-                            urlFragmentList.push(key);
-                            urlFragmentList.push("=");
-                            urlFragmentList.push(options.params[key]);
-                            if("?" === prefix){
-                                prefix = "&";
-                            }
-                        }
-                    }
-                }());
-                if(undefined !== options.hash){
-                    urlFragmentList.push("#");
-                    urlFragmentList.push(options.hash);
-                }
-            }
-            return urlFragmentList.join("");
-        }
+        this.constructor.prototype.genUrl = genUrl;
     }
     register("$url",Url);
     /**
      *  log相关方法
      * */
+    var prettyLog = function(loglevel){
+        return function (information){
+            var msg = information;
+            if('object' === typeof information){
+                msg = JSON.stringify(information,undefined,"\t");
+            }
+            console[loglevel](msg);
+        };
+    };
     function Log(a){
         this.data = a;
         var logLevelList = ['info','log','warn','error'];
-        function print(loglevel){
-            return function (information){
-                var msg = information;
-                if('object' === typeof information){
-                    msg = JSON.stringify(information,undefined,"\t");
-                }
-                console[loglevel](msg);
-            };
-
-        }
         for(var i=0;i<logLevelList.length;i++){
-            this.constructor.prototype[logLevelList[i]] = print(logLevelList[i]);
+            this.constructor.prototype[logLevelList[i]] = prettyLog(logLevelList[i]);
         }
     }
     register("$log",Log);
@@ -143,157 +145,169 @@ window.pck = {};
     /**
      *  $object对象工具函数
      * */
-    function ObjectUtil(){
-        this.constructor.prototype.isNil = function(obj){
-            return undefined === object || null === obj;
-        };
-        this.constructor.prototype.isFunction = function(func){
-            return 'function' === typeof func;
-        };
-        this.constructor.prototype.keyPath = function(keyPath){
-            var regex = /(?:\.([^\.\[\'\"\]]+)|\['([^\.\[\'\"\]]+)\']|\["([^\.\[\'\"\]]+)"\])/g;
-            var pathList = [];
-            var result = null;
-            while(result = regex.exec("."+keyPath)){
-                (function(){
-                    for(var i=1;i<result.length;i++){
-                        if(undefined !== result[i]){
-                            pathList.push(result[i]);
-                            break;
-                        }
-                    }
-                }());
-            }
-            return pathList;
-        };
-        this.constructor.prototype.getKeyPath = function(obj,keyPath){
-            //
-            if(null === obj || undefined === obj || "object" !== typeof obj){
-                return obj;
-            }
-            //
-            var pathList = this.keyPath(keyPath);
-            for(var i=0;i<pathList.length;i++){
-                obj = obj[pathList[i]];
-                if(undefined === obj){
-                    break
-                }
-            }
-            return obj;
-        };
-        this.constructor.prototype.setKeyPath = function(obj,keyPath,value){
-            if(null === obj || undefined === obj || "object" !== typeof obj){
-                return obj;
-            }
-            var pathList = this.keyPath(keyPath);
-            var prop = obj;
-            for(var i=0;i<pathList.length;i++){
-                prop = prop[pathList[i]];
-                if(pathList.length - 2 !== i){
-                    if(undefined === prop){
+    var isNil = function(obj){
+        return undefined === object || null === obj;
+    };
+    var isFunction = function(func){
+        return 'function' === typeof func;
+    };
+    var keyPath = function(keyPath){
+        var regex = /(?:\.([^\.\[\'\"\]]+)|\['([^\.\[\'\"\]]+)\']|\["([^\.\[\'\"\]]+)"\])/g;
+        var pathList = [];
+        var result = null;
+        while(result = regex.exec("."+keyPath)){
+            (function(){
+                for(var i=1;i<result.length;i++){
+                    if(undefined !== result[i]){
+                        pathList.push(result[i]);
                         break;
                     }
-                }else{
-                    prop[pathList[i+1]] = value;
                 }
-            }
+            }());
+        }
+        return pathList;
+    };
+    var getKeyPath = function(obj,keyPath){
+        //
+        if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
-        };
-        this.constructor.prototype.getValue = function(objOrFunction){
-            if(this.isFunction(objOrFunction)){
-                return objOrFunction();
+        }
+        //
+        var pathList = this.keyPath(keyPath);
+        for(var i=0;i<pathList.length;i++){
+            obj = obj[pathList[i]];
+            if(undefined === obj){
+                break
             }
-            return objOrFunction;
-        };
-        //转换属性名 todo:测试
-        this.constructor.prototype.casify = function(obj,convert){
-            if ('object' === typeof obj){
-                for(var name in obj){
-                    if(obj.hasOwnProperty(name)) {
-                        var casedName = convert(name);
-                        if (Array.isArray(obj)) {
-                            for (var i = 0; i < obj.length; i++) {
-                                this.casify(obj[i], convert);
-                            }
-                        }else{
-                            this.casify(obj[name], convert);
-                            (function (){
-                                var originalName = name;
-                                var convertedName = casedName;
-                                if (originalName !== convertedName) {
-                                    Object.defineProperty(obj, convertedName, {
-                                        set: function (value) {
-                                            obj[originalName] = value;
-                                        },
-                                        get: function () {
-                                            return obj[originalName];
-                                        }
-                                    });
-                                }
-                            }());
+        }
+        return obj;
+    };
+    var setKeyPath = function(obj,keyPath,value){
+        if(null === obj || undefined === obj || "object" !== typeof obj){
+            return obj;
+        }
+        var pathList = this.keyPath(keyPath);
+        var prop = obj;
+        for(var i=0;i<pathList.length;i++){
+            prop = prop[pathList[i]];
+            if(pathList.length - 2 !== i){
+                if(undefined === prop){
+                    break;
+                }
+            }else{
+                prop[pathList[i+1]] = value;
+            }
+        }
+        return obj;
+    };
+    var getValue = function(objOrFunction){
+        if(this.isFunction(objOrFunction)){
+            return objOrFunction();
+        }
+        return objOrFunction;
+    };
+    var casify = function(obj,convert){
+        if ('object' === typeof obj){
+            for(var name in obj){
+                if(obj.hasOwnProperty(name)) {
+                    var casedName = convert(name);
+                    if (Array.isArray(obj)) {
+                        for (var i = 0; i < obj.length; i++) {
+                            this.casify(obj[i], convert);
                         }
+                    }else{
+                        this.casify(obj[name], convert);
+                        (function (){
+                            var originalName = name;
+                            var convertedName = casedName;
+                            if (originalName !== convertedName) {
+                                Object.defineProperty(obj, convertedName, {
+                                    set: function (value) {
+                                        obj[originalName] = value;
+                                    },
+                                    get: function () {
+                                        return obj[originalName];
+                                    }
+                                });
+                            }
+                        }());
                     }
                 }
             }
-
-        };
-        this.constructor.prototype.camelCasing = function(obj){
-            this.casify(obj,function(name){
-
-            });
         }
+
+    };
+    var camelCasing = function(obj){
+        this.casify(obj,function(name){
+
+        });
+    };
+    function ObjectUtil(){
+        module.extends(this.constructor,Object);
+        this.constructor.prototype.isNil = isNil;
+        this.constructor.prototype.isFunction = isFunction;
+        this.constructor.prototype.keyPath = keyPath;
+        this.constructor.prototype.getKeyPath = getKeyPath;
+        this.constructor.prototype.setKeyPath = setKeyPath;
+        this.constructor.prototype.getValue = getValue;
+        //转换属性名 todo:待测试
+        this.constructor.prototype.casify = casify;
+        this.constructor.prototype.camelCasing = camelCasing;
     }
     register("$object",ObjectUtil);
     /**
      *  $Date 日期时间工具方法
      * */
+    var getDayBreak = function(date){
+        return new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0);
+    };
+    var addDay = function(date,delta){
+        var timestamp = date.getTime()+60*60*1000*24*delta;
+        return new Date(timestamp);
+    };
+    var format = function(template,date,padLeft){
+        if(!isNaN(date)){
+            date = new Date(date);
+        }
+        var regex = /(yyyy|MM|dd|HH|mm|ss|z)/g;
+        var dateStringList = [];
+        var lastIndex = 0;
+        var dateComponent = null;
+        var stringUtil = new StringUtil();
+        function padLeftDate(n,repeatCount){
+            if(padLeft){
+                stringUtil.padLeft(n+"",repeatCount,"0")
+            }
+            return n;
+        }
+        while(dateComponent = regex.exec(template)){
+            dateStringList.push(template.slice(lastIndex,dateComponent.index));
+            if("yyyy" === dateComponent[0]){
+                dateStringList.push(date.getFullYear());
+            }else if("MM" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getMonth()+1));
+            }else if("dd" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getDate()));
+            }else if("HH" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getHours()));
+            }else if("mm" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getMinutes()));
+            }else if("ss" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getSeconds()));
+            }else if("z" === dateComponent[0]){
+                dateStringList.push(padLeftDate(date.getMilliseconds()));
+            }
+            lastIndex = dateComponent.index+dateComponent[0].length;
+        }
+        return dateStringList.join("");
+    };
     function DateUtil(){
         //获取凌晨0点的Date对象
-        this.constructor.prototype.getDayBreak = function(date){
-            return new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0);
-        };
+        this.constructor.prototype.getDayBreak = getDayBreak;
         //增加n天,负数为减天数
-        this.constructor.prototype.addDay = function(date,delta){
-            var timestamp = date.getTime()+60*60*1000*24*delta;
-            return new Date(timestamp);
-        };
+        this.constructor.prototype.addDay = addDay;
         //格式化日期
-        this.constructor.prototype.format = function(template,date,padLeft){
-            if(!isNaN(date)){
-                date = new Date(date);
-            }
-            var regex = /(yyyy|MM|dd|HH|mm|ss|z)/g;
-            var dateStringList = [];
-            var lastIndex = 0;
-            var dateComponent = null;
-            var stringUtil = new StringUtil();
-            function padLeftDate(n,repeatCount){
-                if(padLeft){
-                    stringUtil.padLeft(n+"",repeatCount,"0")
-                }
-                return n;
-            }
-            while(dateComponent = regex.exec(template)){
-                dateStringList.push(template.slice(lastIndex,dateComponent.index));
-                if("yyyy" === dateComponent[0]){
-                    dateStringList.push(date.getFullYear());
-                }else if("MM" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getMonth()+1));
-                }else if("dd" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getDate()));
-                }else if("HH" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getHours()));
-                }else if("mm" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getMinutes()));
-                }else if("ss" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getSeconds()));
-                }else if("z" === dateComponent[0]){
-                    dateStringList.push(padLeftDate(date.getMilliseconds()));
-                }
-                lastIndex = dateComponent.index+dateComponent[0].length;
-            }
-            return dateStringList.join("");
-        }
+        this.constructor.prototype.format = format;
     }
     register("$date",DateUtil);
     /**
@@ -431,11 +445,12 @@ window.pck = {};
     /**
      *  $number 数字方法
      * */
+    var isInteger = function(i){
+        return (!isNaN(i)) && Math.floor(i) === i;
+    };
     function NumberUtil(){
         //判断是不是整数
-        this.constructor.prototype.isInteger = function(i){
-            return (!isNaN(i)) && Math.floor(i) === i;
-        }
+        this.constructor.prototype.isInteger = isInteger;
     }
     register("$number",NumberUtil);
     /**
@@ -475,7 +490,7 @@ window.pck = {};
      *  config是配置的,module.config是全局注入的,临时配置会覆盖全局配置
      *  有run(config,deps,injection)和run(deps,injection)两种形式,其中config可以是function或object
      * */
-    module.run = function(){
+    module.use = function(){
         var config = undefined;
         var dependence = [];
         var injection;
@@ -521,7 +536,8 @@ window.pck = {};
     /**
      *  继承
      * */
-    module.extends = function(Child,Parent){        var F = function () {};
+    module.extends = function(Child,Parent){
+        var F = function () {};
         F.prototype = Parent.prototype;
         Child.prototype = new F();
         Child.prototype.constructor = Child;
