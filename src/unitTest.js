@@ -13,6 +13,19 @@ var gap = {
     }
 };
 pck.config({
-    'gao':gap
+    'gao':{
+        say:function(){
+            console.log("global");
+        }
+    }
 });
-pck
+var ctx = pck.with({
+    'gao':{
+        say:function(){
+            console.log("temp");
+        }
+    }
+});
+pck.use(['gao'],function(gao){
+    gao.say();
+});

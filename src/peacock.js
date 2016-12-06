@@ -4,32 +4,43 @@
 window.pck = {};
 (function(module){
     //注册模块属性$开始
-    var _module = {};
-    function register(propertyName,constructor){
+    var __module = {};
+    function register(propertyName,objCreator){
         var params = Array.prototype.slice.call(arguments,2);
         Object.defineProperty(module,propertyName,{
             get:function(){
-                if(undefined === _module[propertyName]){
-                    _module[propertyName] = {};
-                    constructor.apply(_module[propertyName],params);
+                if(undefined === __module[propertyName]){
+                    __module[propertyName] = objCreator();
                 }
-                return _module[propertyName];
+                return __module[propertyName];
             },
             configurable:false,
             enumerable:false
         });
     }
     /**
+     *  继承
+     * */
+    module.extends = function(Child,Parent){
+        var F = function () {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.prototype.constructor = Child;
+    };
+    /**
      *  向全局对象里添加,获取,删除对象
      **/
     function Share(){
 
     }
-    register("$share",Share);
+    module.extends(Share,Object);
+    register("$share",function(){
+        return new Share();
+    });
     /**
      *  url参数相关操作方法
      * */
-    function getKeyValueFromUrl(queryString){
+    function __getKeyValueFromUrl(queryString){
         var queryParam = {};
         var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
         //
@@ -42,63 +53,10 @@ window.pck = {};
         }
         return queryParam;
     }
-    var query = function(key){
-        if(url !== this.url){
-            params = getKeyValueFromUrl(this.url.search);
-        }
-        if(undefined !== params[key] && params[key].length > 0){
-            return params[key][0];
-        }
-        return undefined;
-    };
-    var queryAll = function(key){
-        if(url !== this.url){
-            params = getKeyValueFromUrl(this.url.search);
-        }
-        return params[key];
-    };
-    var genUrl = function(options){
-        var urlFragmentList = [];
-
-        if(options.host){
-            var protocol = options.protocol ? options.protocol+"://" : "http://";
-            var host = options.host ? options.host : "";
-            var port = options.port ? ":"+options.port : "";
-            urlFragmentList.push(protocol);
-            urlFragmentList.push(host);
-            urlFragmentList.push(port);
-        }
-        if(undefined === options.path){
-            throw new Error("path must not be undefined");
-        }else{
-            if("/" !== options.path.charAt(0)){
-                urlFragmentList.splice(0);
-            }
-            urlFragmentList.push(options.path);
-            (function(){
-                var prefix = "?";
-                for(var key in options.params){
-                    if(options.params.hasOwnProperty(key)){
-                        urlFragmentList.push(prefix);
-                        urlFragmentList.push(key);
-                        urlFragmentList.push("=");
-                        urlFragmentList.push(options.params[key]);
-                        if("?" === prefix){
-                            prefix = "&";
-                        }
-                    }
-                }
-            }());
-            if(undefined !== options.hash){
-                urlFragmentList.push("#");
-                urlFragmentList.push(options.hash);
-            }
-        }
-        return urlFragmentList.join("");
-    };
     function Url(){
+
         var url = window.location.href;
-        var params = getKeyValueFromUrl(window.location.href.search);
+        var params = __getKeyValueFromUrl(window.location.href.search);
         /**
          *  url 定义属性
          * */
@@ -107,18 +65,72 @@ window.pck = {};
                 return window.location.href;
             }
         });
-        this.constructor.prototype.query = query;
-        this.constructor.prototype.queryAll = queryAll;
+        this.constructor.prototype.query = function(key){
+            if(url !== this.url){
+                params = __getKeyValueFromUrl(this.url.search);
+            }
+            if(undefined !== params[key] && params[key].length > 0){
+                return params[key][0];
+            }
+            return undefined;
+        };
+        this.constructor.prototype.queryAll = function(key){
+            if(url !== this.url){
+                params = __getKeyValueFromUrl(this.url.search);
+            }
+            return params[key];
+        };
         /**
          *  options 包括protocol,host,port,path,params,hash
          * */
-        this.constructor.prototype.genUrl = genUrl;
+        this.constructor.prototype.genUrl = function(options){
+            var urlFragmentList = [];
+
+            if(options.host){
+                var protocol = options.protocol ? options.protocol+"://" : "http://";
+                var host = options.host ? options.host : "";
+                var port = options.port ? ":"+options.port : "";
+                urlFragmentList.push(protocol);
+                urlFragmentList.push(host);
+                urlFragmentList.push(port);
+            }
+            if(undefined === options.path){
+                throw new Error("path must not be undefined");
+            }else{
+                if("/" !== options.path.charAt(0)){
+                    urlFragmentList.splice(0);
+                }
+                urlFragmentList.push(options.path);
+                (function(){
+                    var prefix = "?";
+                    for(var key in options.params){
+                        if(options.params.hasOwnProperty(key)){
+                            urlFragmentList.push(prefix);
+                            urlFragmentList.push(key);
+                            urlFragmentList.push("=");
+                            urlFragmentList.push(options.params[key]);
+                            if("?" === prefix){
+                                prefix = "&";
+                            }
+                        }
+                    }
+                }());
+                if(undefined !== options.hash){
+                    urlFragmentList.push("#");
+                    urlFragmentList.push(options.hash);
+                }
+            }
+            return urlFragmentList.join("");
+        };
     }
-    register("$url",Url);
+    module.extends(Url,Object);
+    register("$url",function(){
+        return new Url();
+    });
     /**
      *  log相关方法
      * */
-    var prettyLog = function(loglevel){
+    var __prettyLog = function(loglevel){
         return function (information){
             var msg = information;
             if('object' === typeof information){
@@ -127,21 +139,25 @@ window.pck = {};
             console[loglevel](msg);
         };
     };
-    function Log(a){
-        this.data = a;
+    function Log(){
         var logLevelList = ['info','log','warn','error'];
         for(var i=0;i<logLevelList.length;i++){
-            this.constructor.prototype[logLevelList[i]] = prettyLog(logLevelList[i]);
+            this.constructor.prototype[logLevelList[i]] = __prettyLog(logLevelList[i]);
         }
     }
-    register("$log",Log);
+    module.extends(Log,Object);
+    register("$log",function(){
+        return new Log();
+    });
     /**
      * 工具类
      * */
     function Util(){
-
     }
-    register("$util",Util);
+    module.extends(Util,Object);
+    register("$util",function(){
+        return new Util();
+    });
     /**
      *  $object对象工具函数
      * */
@@ -173,7 +189,7 @@ window.pck = {};
             return obj;
         }
         //
-        var pathList = this.keyPath(keyPath);
+        var pathList = keyPath(keyPath);
         for(var i=0;i<pathList.length;i++){
             obj = obj[pathList[i]];
             if(undefined === obj){
@@ -186,7 +202,7 @@ window.pck = {};
         if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
         }
-        var pathList = this.keyPath(keyPath);
+        var pathList = keyPath(keyPath);
         var prop = obj;
         for(var i=0;i<pathList.length;i++){
             prop = prop[pathList[i]];
@@ -201,7 +217,7 @@ window.pck = {};
         return obj;
     };
     var getValue = function(objOrFunction){
-        if(this.isFunction(objOrFunction)){
+        if(isFunction(objOrFunction)){
             return objOrFunction();
         }
         return objOrFunction;
@@ -213,10 +229,10 @@ window.pck = {};
                     var casedName = convert(name);
                     if (Array.isArray(obj)) {
                         for (var i = 0; i < obj.length; i++) {
-                            this.casify(obj[i], convert);
+                           casify(obj[i], convert);
                         }
                     }else{
-                        this.casify(obj[name], convert);
+                        casify(obj[name], convert);
                         (function (){
                             var originalName = name;
                             var convertedName = casedName;
@@ -238,12 +254,11 @@ window.pck = {};
 
     };
     var camelCasing = function(obj){
-        this.casify(obj,function(name){
+        casify(obj,function(name){
 
         });
     };
     function ObjectUtil(){
-        module.extends(this.constructor,Object);
         this.constructor.prototype.isNil = isNil;
         this.constructor.prototype.isFunction = isFunction;
         this.constructor.prototype.keyPath = keyPath;
@@ -254,7 +269,10 @@ window.pck = {};
         this.constructor.prototype.casify = casify;
         this.constructor.prototype.camelCasing = camelCasing;
     }
-    register("$object",ObjectUtil);
+    module.extends(ObjectUtil,Object);
+    register("$object",function(){
+        return ObjectUtil();
+    });
     /**
      *  $Date 日期时间工具方法
      * */
@@ -302,6 +320,7 @@ window.pck = {};
         return dateStringList.join("");
     };
     function DateUtil(){
+
         //获取凌晨0点的Date对象
         this.constructor.prototype.getDayBreak = getDayBreak;
         //增加n天,负数为减天数
@@ -309,139 +328,154 @@ window.pck = {};
         //格式化日期
         this.constructor.prototype.format = format;
     }
-    register("$date",DateUtil);
+    module.extends(DateUtil,Object);
+    register("$date",function(){
+        return new DateUtil();
+    });
     /**
      *  $string 字符串工具方法
      * */
-    function StringUtil(){
-        //删除字符串两边的指定字符
-        this.constructor.prototype.trim = function(string,chars){
-            var charList = [" "];
-            if(undefined !== chars){
-                charList = chars.split("");
+    var trim = function(string,chars){
+        var charList = [" "];
+        if(undefined !== chars){
+            charList = chars.split("");
+        }
+        //var startFinish = false;
+        //var endFinish = false;
+        (function a(){
+            var trimStart = false;
+            var trimEnd = false;
+            for(var i=0;i<charList.length;i++){
+                if(string[0] === charList[i]){
+                    trimStart = true;
+                }
+                if(string[string.length - 1] === charList[i]){
+                    trimEnd = true;
+                }
             }
-            //var startFinish = false;
-            //var endFinish = false;
-            (function a(){
-                var trimStart = false;
-                var trimEnd = false;
-                for(var i=0;i<charList.length;i++){
-                    if(string[0] === charList[i]){
-                        trimStart = true;
-                    }
-                    if(string[string.length - 1] === charList[i]){
-                        trimEnd = true;
-                    }
-                }
-                var sliceStart = 0;
-                var sliceEnd = string.length;
-                if(trimStart){
-                    sliceStart = 1;
-                }
-                if(trimEnd){
-                    sliceEnd--;
-                }
-                if(trimStart || trimEnd){
-                    string = string.slice(sliceStart,sliceEnd);
-                    a();
-                }
-            }());
+            var sliceStart = 0;
+            var sliceEnd = string.length;
+            if(trimStart){
+                sliceStart = 1;
+            }
+            if(trimEnd){
+                sliceEnd--;
+            }
+            if(trimStart || trimEnd){
+                string = string.slice(sliceStart,sliceEnd);
+                a();
+            }
+        }());
+        return string;
+
+    };
+    var repeat = function(string,repeatCount){
+        var list = [];
+        if(repeatCount < 2){
             return string;
+        }
+        for(var i=0;i< repeatCount;i++){
+            list.push(string);
+        }
+        return list.join("");
+    };
+    var padBoth = function(string,leftPadCount,rightPadCount,chars){
+        if(undefined === chars || "" === chars){
+            chars = " ";
+        }
+        if(0 === leftPadCount && 0 === rightPadCount){
+            return string;
+        }
+        //
+        var resultStringList = [];
+        if(leftPadCount > 0){
+            var leftRepeatCount = Math.floor(leftPadCount / chars.length);
+            var leftRestCharCount = leftPadCount % chars.length;
+            resultStringList.push(this.repeat(chars,leftRepeatCount));
+            resultStringList.push(chars.slice(0,leftRestCharCount));
+        }
+        resultStringList.push(string);
+        if(rightPadCount > 0){
+            var rightRepeatCount = Math.floor(rightPadCount / chars.length);
+            var rightRestCharCount = rightPadCount % chars.length;
+            resultStringList.push(this.repeat(chars,rightRepeatCount));
+            resultStringList.push(chars.slice(0,rightRestCharCount));
+        }
 
-        };
+        return resultStringList.join("");
+
+    };
+    var padLeft = function(string,length,chars){
+        var leftPadCount = 0;
+        if(length > string.length){
+            leftPadCount = length - string.length;
+        }
+        return this.padBoth(string,leftPadCount,0,chars);
+    };
+    var padRight = function(string,length,chars){
+        var rightPadCount = 0;
+        if(length > string.length){
+            rightPadCount = length - string.length;
+        }
+        return this.padBoth(string,0,rightPadCount,chars);
+    };
+    var pad = function(string,length,chars){
+        var leftPadCount = 0;
+        var rightPadCount = 0;
+        if(length > string.length){
+            var totalPadCount = length - string.length;
+            leftPadCount = Math.floor(totalPadCount/2);
+            rightPadCount = totalPadCount-leftPadCount;
+        }
+        return padBoth(string,leftPadCount,rightPadCount,chars);
+    };
+    var render = function(template,data){
+        var regex = /(\{\{\s*(\S*)\s*\}\})/g;
+        var resultStringList = [];
+        var result = null;
+        var lastIndex = 0;
+        while(result = regex.exec(template)){
+            resultStringList.push(template.slice(lastIndex,result.index));
+            var key = result[2];
+            if("{{" === key || "}}" === key || "{" ===key || "}" === key){
+                resultStringList.push(key);
+            }else{
+                resultStringList.push(new ObjectUtil().getKeyPath(data,key));
+            }
+
+            lastIndex = result.index + result[1].length;
+        }
+        if(template.length - 1 > lastIndex){
+            resultStringList.push(template.slice(lastIndex,template.length));
+        }
+        return resultStringList.join("");
+    };
+    var camelCasify = function(word){
+        var regex = /[a-zA-Z]/ig
+    };
+    function StringUtil(){
+
+        //删除字符串两边的指定字符
+        this.constructor.prototype.trim = trim;
         //重复n次字符串
-        this.constructor.prototype.repeat = function(string,repeatCount){
-            var list = [];
-            if(repeatCount < 2){
-                return string;
-            }
-            for(var i=0;i< repeatCount;i++){
-                list.push(string);
-            }
-            return list.join("");
-        };
+        this.constructor.prototype.repeat = repeat;
         //填充两边
-        this.constructor.prototype.padBoth = function padBase(string,leftPadCount,rightPadCount,chars){
-            if(undefined === chars || "" === chars){
-                chars = " ";
-            }
-            if(0 === leftPadCount && 0 === rightPadCount){
-                return string;
-            }
-            //
-            var resultStringList = [];
-            if(leftPadCount > 0){
-                var leftRepeatCount = Math.floor(leftPadCount / chars.length);
-                var leftRestCharCount = leftPadCount % chars.length;
-                resultStringList.push(this.repeat(chars,leftRepeatCount));
-                resultStringList.push(chars.slice(0,leftRestCharCount));
-            }
-            resultStringList.push(string);
-            if(rightPadCount > 0){
-                var rightRepeatCount = Math.floor(rightPadCount / chars.length);
-                var rightRestCharCount = rightPadCount % chars.length;
-                resultStringList.push(this.repeat(chars,rightRepeatCount));
-                resultStringList.push(chars.slice(0,rightRestCharCount));
-            }
-
-            return resultStringList.join("");
-
-        };
+        this.constructor.prototype.padBoth = padBoth;
         //填充左边
-        this.constructor.prototype.padLeft = function(string,length,chars){
-            var leftPadCount = 0;
-            if(length > string.length){
-                leftPadCount = length - string.length;
-            }
-            return this.padBoth(string,leftPadCount,0,chars);
-        };
+        this.constructor.prototype.padLeft = padLeft;
         //填充右边
-        this.constructor.prototype.padRight = function(string,length,chars){
-            var rightPadCount = 0;
-            if(length > string.length){
-                rightPadCount = length - string.length;
-            }
-            return this.padBoth(string,0,rightPadCount,chars);
-        };
+        this.constructor.prototype.padRight = padRight;
         //近似均匀地填充两边
-        this.constructor.prototype.pad = function(string,length,chars){
-            var leftPadCount = 0;
-            var rightPadCount = 0;
-            if(length > string.length){
-                var totalPadCount = length - string.length;
-                leftPadCount = Math.floor(totalPadCount/2);
-                rightPadCount = totalPadCount-leftPadCount;
-            }
-            return this.padBoth(string,leftPadCount,rightPadCount,chars);
-        };
+        this.constructor.prototype.pad = pad;
         //渲染模板函数:{{}}
-        this.constructor.prototype.render = function(template,data){
-            var regex = /(\{\{\s*(\S*)\s*\}\})/g;
-            var resultStringList = [];
-            var result = null;
-            var lastIndex = 0;
-            while(result = regex.exec(template)){
-                resultStringList.push(template.slice(lastIndex,result.index));
-                var key = result[2];
-                if("{{" === key || "}}" === key || "{" ===key || "}" === key){
-                    resultStringList.push(key);
-                }else{
-                    resultStringList.push(new ObjectUtil().getKeyPath(data,key));
-                }
-
-                lastIndex = result.index + result[1].length;
-            }
-            if(template.length - 1 > lastIndex){
-                resultStringList.push(template.slice(lastIndex,template.length));
-            }
-            return resultStringList.join("");
-        };
+        this.constructor.prototype.render = render;
         //转变为驼峰标识
-        this.constructor.prototype.camelCasify = function(word){
-            var regex = /[a-zA-Z]/ig
-        };
+        this.constructor.prototype.camelCasify = camelCasify;
     }
-    register("$string",StringUtil);
+    module.extends(StringUtil,Object);
+    register("$string",function(){
+        return new StringUtil();
+    });
     /**
      *  $number 数字方法
      * */
@@ -452,7 +486,10 @@ window.pck = {};
         //判断是不是整数
         this.constructor.prototype.isInteger = isInteger;
     }
-    register("$number",NumberUtil);
+    module.extends(NumberUtil,Object);
+    register("$number",function(){
+        return new NumberUtil();
+    });
     /**
      *  $array 数组方法
      * */
@@ -460,14 +497,17 @@ window.pck = {};
         this.constructor.prototype.slice = Function.call.bind(Array.prototype.slice);
         this.constructor.prototype.forEach = Function.call.bind(Array.prototype.forEach);
     }
-    register("$array",ArrayUtil);
+    module.extends(ArrayUtil,Object);
+    register("$array",function(){
+        return new ArrayUtil();
+    });
     /**
      *   依赖注入
      * */
-    var _dependencies = {};
+    var __dependencies = {};
     module.register = function(name,obj){
-        if (undefined === _dependencies[name]){
-            _dependencies[name] = obj;
+        if (undefined === __dependencies[name]){
+            __dependencies[name] = obj;
         }else{
             throw new Error(['duplicate name ',name].join(''));
         }
@@ -488,36 +528,12 @@ window.pck = {};
     };
     /**
      *  config是配置的,module.config是全局注入的,临时配置会覆盖全局配置
-     *  有run(config,deps,injection)和run(deps,injection)两种形式,其中config可以是function或object
+     *  有use(deps,injection)两种形式,其中config可以是function或object
      * */
-    module.use = function(){
-        var config = undefined;
-        var dependence = [];
-        var injection;
-        //
-        if(1 === arguments.length){
-            injection = arguments[0];
-        }else if(2 === arguments.length){
-            dependence = arguments[0];
-            injection = arguments[1];
-        }else if(arguments.length > 3){
-            config = new ObjectUtil().getValue(arguments[0]);
-            dependence = arguments[1];
-            injection = arguments[2];
-        }else{
-            throw new Error("this method must pass a argument at least.")
+    var __inject = function(dependence,injection,paramGetter){
+        if(!Array.isArray(dependence)){
+            throw new Error('dependence is not a array');
         }
-
-        //if(Array.isArray(arguments[0])){
-        //    dependence = arguments[0];
-        //    injection = arguments[1];
-        //}else if('object' === typeof arguments[0]){
-        //    config = arguments[0];
-        //    dependence = arguments[1];
-        //    injection = arguments[2];
-        //}else {
-        //    throw new Error('config is valid');
-        //}
         if('function' !== typeof injection){
             throw new Error('injection is not a function');
         }
@@ -525,7 +541,7 @@ window.pck = {};
         var paramList = [];
         for(var i=0;i<dependence.length;i++){
             var paramName = dependence[i];
-            var param = undefined === config ? _dependencies[paramName] : (config[paramName] && _dependencies[paramName]);
+            var param = paramGetter(paramName);
             if(undefined === param){
                 throw new Error(paramName+' is not found. you must register it before using it.');
             }
@@ -533,15 +549,24 @@ window.pck = {};
         }
         injection.apply(undefined,paramList);
     };
-    /**
-     *  继承
-     * */
-    module.extends = function(Child,Parent){
-        var F = function () {};
-        F.prototype = Parent.prototype;
-        Child.prototype = new F();
-        Child.prototype.constructor = Child;
+    module.use = function(dependence,injection){
+        __inject(dependence,injection,function(paramName){
+            return  __dependencies[paramName];
+        });
     };
+    module.with = function(config){
+        var configContext = new ConfigContext(config);
+        return configContext;
+    };
+    function ConfigContext(tempConfig){
+        this.constructor.prototype.use = function(dependence,injection){
+            __inject(dependence,injection,function(paramName){
+                return  undefined !== tempConfig[paramName] ? tempConfig[paramName] : __dependencies[paramName];
+            });
+        }
+    }
+    module.extends(ConfigContext,Object);
+
 }(window.pck));
 //window.peacock = (function(){
 //
