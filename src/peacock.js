@@ -566,7 +566,17 @@ window.pck = {};
         }
     }
     module.extends(ConfigContext,Object);
-
+    module.config({
+        '$share': module.$share,
+        '$url': module.$url,
+        '$log': module.$log,
+        '$util': module.$util,
+        '$object': module.$object,
+        '$date': module.$date,
+        '$string': module.$string,
+        '$number': module.$number,
+        '$array': module.$array
+    })
 }(window.pck));
 //window.peacock = (function(){
 //
