@@ -45,7 +45,7 @@ window.pck = {};
         var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
         //
         var kv;
-        while(kv = regex.exec(url)){
+        while(kv = regex.exec(queryString)){
             if(!queryParam.hasOwnProperty(kv[1])){
                 queryParam[kv[1]] = [];
             }
@@ -183,13 +183,13 @@ window.pck = {};
         }
         return pathList;
     };
-    var getKeyPath = function(obj,keyPath){
+    var getKeyPath = function(obj,keyPathString){
         //
         if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
         }
         //
-        var pathList = keyPath(keyPath);
+        var pathList = keyPath(keyPathString);
         for(var i=0;i<pathList.length;i++){
             obj = obj[pathList[i]];
             if(undefined === obj){

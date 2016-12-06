@@ -12,20 +12,8 @@ var gap = {
         console.log(this.name);
     }
 };
-pck.config({
-    'gao':{
-        say:function(){
-            console.log("global");
-        }
-    }
-});
-var ctx = pck.with({
-    'gao':{
-        say:function(){
-            console.log("temp");
-        }
-    }
-});
-pck.use(['gao'],function(gao){
-    gao.say();
+
+
+pck.use(['$string'],function($string){
+    console.log($string.render('dao is {{dao}}',{dao:1}));
 });
