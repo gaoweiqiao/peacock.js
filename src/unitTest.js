@@ -24,6 +24,7 @@ pck.use(['$share'],function($share){
         error:'$share fail'
     });
 });
+
 /**
  * 测试 $string
  */
