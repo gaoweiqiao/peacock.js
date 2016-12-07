@@ -6,7 +6,9 @@ window.pck = {};
     //注册模块属性$开始
     var __module = {};
     function register(propertyName,objCreator){
-        var params = Array.prototype.slice.call(arguments,2);
+        if(!isFunction(objCreator)){
+            throw new Error('objCreator must be a function')
+        }
         Object.defineProperty(module,propertyName,{
             get:function(){
                 if(undefined === __module[propertyName]){
@@ -18,6 +20,12 @@ window.pck = {};
             enumerable:false
         });
     }
+    /**
+     * 版本号
+     * */
+    register('version',function(){
+        return '0.0.1';
+    });
     /**
      *  继承
      * */
@@ -161,13 +169,13 @@ window.pck = {};
     /**
      *  $object对象工具函数
      * */
-    var isNil = function(obj){
+    function isNil(obj){
         return undefined === object || null === obj;
-    };
-    var isFunction = function(func){
+    }
+    function isFunction(func){
         return 'function' === typeof func;
-    };
-    var keyPath = function(keyPath){
+    }
+    function keyPath(keyPath){
         var regex = /(?:\.([^\.\[\'\"\]]+)|\['([^\.\[\'\"\]]+)\']|\["([^\.\[\'\"\]]+)"\])/g;
         var pathList = [];
         var result = null;
@@ -182,8 +190,8 @@ window.pck = {};
             }());
         }
         return pathList;
-    };
-    var getKeyPath = function(obj,keyPathString){
+    }
+    function getKeyPath(obj,keyPathString){
         //
         if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
@@ -197,8 +205,8 @@ window.pck = {};
             }
         }
         return obj;
-    };
-    var setKeyPath = function(obj,keyPath,value){
+    }
+    function setKeyPath(obj,keyPath,value){
         if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
         }
@@ -215,14 +223,14 @@ window.pck = {};
             }
         }
         return obj;
-    };
-    var getValue = function(objOrFunction){
+    }
+    function getValue(objOrFunction){
         if(isFunction(objOrFunction)){
             return objOrFunction();
         }
         return objOrFunction;
-    };
-    var casify = function(obj,convert){
+    }
+    function casify(obj,convert){
         if ('object' === typeof obj){
             for(var name in obj){
                 if(obj.hasOwnProperty(name)) {
@@ -252,12 +260,11 @@ window.pck = {};
             }
         }
 
-    };
-    var camelCasing = function(obj){
-        casify(obj,function(name){
+    }
 
-        });
-    };
+    function camelCasing(obj){
+        casify(obj,camelCasify);
+    }
     function ObjectUtil(){
         this.constructor.prototype.isNil = isNil;
         this.constructor.prototype.isFunction = isFunction;
@@ -276,14 +283,14 @@ window.pck = {};
     /**
      *  $Date 日期时间工具方法
      * */
-    var getDayBreak = function(date){
+    function getDayBreak(date){
         return new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0,0);
-    };
-    var addDay = function(date,delta){
+    }
+    function addDay(date,delta){
         var timestamp = date.getTime()+60*60*1000*24*delta;
         return new Date(timestamp);
-    };
-    var format = function(template,date,padLeft){
+    }
+    function format(template,date,padLeft){
         if(!isNaN(date)){
             date = new Date(date);
         }
@@ -318,7 +325,7 @@ window.pck = {};
             lastIndex = dateComponent.index+dateComponent[0].length;
         }
         return dateStringList.join("");
-    };
+    }
     function DateUtil(){
 
         //获取凌晨0点的Date对象
@@ -335,7 +342,7 @@ window.pck = {};
     /**
      *  $string 字符串工具方法
      * */
-    var trim = function(string,chars){
+    function trim(string,chars){
         var charList = [" "];
         if(undefined !== chars){
             charList = chars.split("");
@@ -368,8 +375,8 @@ window.pck = {};
         }());
         return string;
 
-    };
-    var repeat = function(string,repeatCount){
+    }
+    function repeat(string,repeatCount){
         var list = [];
         if(repeatCount < 2){
             return string;
@@ -378,8 +385,8 @@ window.pck = {};
             list.push(string);
         }
         return list.join("");
-    };
-    var padBoth = function(string,leftPadCount,rightPadCount,chars){
+    }
+    function padBoth(string,leftPadCount,rightPadCount,chars){
         if(undefined === chars || "" === chars){
             chars = " ";
         }
@@ -404,22 +411,22 @@ window.pck = {};
 
         return resultStringList.join("");
 
-    };
-    var padLeft = function(string,length,chars){
+    }
+    function padLeft(string,length,chars){
         var leftPadCount = 0;
         if(length > string.length){
             leftPadCount = length - string.length;
         }
         return this.padBoth(string,leftPadCount,0,chars);
-    };
-    var padRight = function(string,length,chars){
+    }
+    function padRight(string,length,chars){
         var rightPadCount = 0;
         if(length > string.length){
             rightPadCount = length - string.length;
         }
         return this.padBoth(string,0,rightPadCount,chars);
-    };
-    var pad = function(string,length,chars){
+    }
+    function pad(string,length,chars){
         var leftPadCount = 0;
         var rightPadCount = 0;
         if(length > string.length){
@@ -428,8 +435,8 @@ window.pck = {};
             rightPadCount = totalPadCount-leftPadCount;
         }
         return padBoth(string,leftPadCount,rightPadCount,chars);
-    };
-    var render = function(template,data){
+    }
+    function render(template,data){
         var regex = /(\{\{\s*(\S*)\s*\}\})/g;
         var resultStringList = [];
         var result = null;
@@ -449,12 +456,75 @@ window.pck = {};
             resultStringList.push(template.slice(lastIndex,template.length));
         }
         return resultStringList.join("");
-    };
-    var camelCasify = function(word){
-        var regex = /[a-zA-Z]/ig
-    };
-    function StringUtil(){
+    }
+    function camelCasify(word){
+        var regex = /[a-zA-Z0-9\$]+/g;
+        var wordList = [];
+        var result;
+        while (result = regex.exec(word)){
+            (function(){
+                var wordFragment = result[0];
+                wordList.push(wordFragment[0].toUpperCase());
+                wordList.push(wordFragment.slice(1));
+            }());
+        }
+        return wordList.join('');
+    }
+    //todo:
+    function kebabCasify(word){
+        var regex = /[a-zA-Z0-9\$]+/g;
+        var camelRegex = /[A-Z][a-zA-Z0-9\$]*/g;
+        var wordList = [];
+        var result;
+        while (result = regex.exec(word)){
+            (function(){
+                var wordFragment = result[0];
+                //
+                var camelResult = camelRegex.exec(wordFragment);
+                if(camelResult){
+                    if(camelResult.index > 0){
+                        wordList.push(wordFragment.slice(0,camelResult.index).toLowerCase());
+                    }
+                    do{
+                        wordList.push(camelResult[0].toLowerCase());
+                    }
+                    while (camelResult = camelRegex.exec(wordFragment));
+                }else{
+                    wordList.push(wordFragment);
+                }
+            }());
+        }
+        return wordList.join('-');
+    }
+    //todo:
+    function snackCasing(word){
+        var regex = /[a-zA-Z0-9\$]+/g;
+        var camelRegex = /[A-Z][a-zA-Z0-9\$]*/g;
+        var wordList = [];
+        var result;
+        while (result = regex.exec(word)){
+            (function(){
+                var wordFragment = result[0];
+                //
+                var camelResult = camelRegex.exec(wordFragment);
+                if(camelResult){
+                    if(camelResult.index > 0){
+                        wordList.push(wordFragment.slice(0,camelResult.index).toLowerCase());
+                    }
+                    do{
+                        wordList.push(camelResult[0].toLowerCase());
+                    }
+                    while (camelResult = camelRegex.exec(wordFragment));
+                }else{
+                    wordList.push(wordFragment);
+                }
 
+            }());
+        }
+        return wordList.join('_');
+    }
+    function StringUtil(){
+    console.log("StringUtil init");
         //删除字符串两边的指定字符
         this.constructor.prototype.trim = trim;
         //重复n次字符串
@@ -471,6 +541,10 @@ window.pck = {};
         this.constructor.prototype.render = render;
         //转变为驼峰标识
         this.constructor.prototype.camelCasify = camelCasify;
+        //转变为减号连接
+        this.constructor.prototype.kebabCasify = kebabCasify;
+        //转变为下划线连接
+        this.constructor.prototype.snackCasing = snackCasing;
     }
     module.extends(StringUtil,Object);
     register("$string",function(){
@@ -505,9 +579,10 @@ window.pck = {};
      *   依赖注入
      * */
     var __dependencies = {};
-    module.register = function(name,obj){
+    module.register = function(name,dependent){
         if (undefined === __dependencies[name]){
-            __dependencies[name] = obj;
+            __dependencies[name] = dependent;
+
         }else{
             throw new Error(['duplicate name ',name].join(''));
         }
@@ -544,6 +619,8 @@ window.pck = {};
             var param = paramGetter(paramName);
             if(undefined === param){
                 throw new Error(paramName+' is not found. you must register it before using it.');
+            }else if(isFunction(param)){
+                param = param();
             }
             paramList.push(param);
         }
@@ -567,15 +644,15 @@ window.pck = {};
     }
     module.extends(ConfigContext,Object);
     module.config({
-        '$share': module.$share,
-        '$url': module.$url,
-        '$log': module.$log,
-        '$util': module.$util,
-        '$object': module.$object,
-        '$date': module.$date,
-        '$string': module.$string,
-        '$number': module.$number,
-        '$array': module.$array
+        '$share': function(){return module.$share},
+        '$url': function(){return module.$url},
+        '$log': function(){return module.$log},
+        '$util': function(){return module.$util},
+        '$object': function(){return module.$object},
+        '$date': function(){return module.$date},
+        '$string': function(){return module.$string},
+        '$number': function(){return module.$number},
+        '$array': function(){return module.$array}
     })
 }(window.pck));
 //window.peacock = (function(){
