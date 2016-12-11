@@ -269,9 +269,28 @@ window.pck = {};
         }
 
     }
-
     function camelCasing(obj){
         casify(obj,camelCasify);
+    }
+    function kebabCasing(obj){
+        casify(obj,kebabCasify);
+    }
+    function snackCasing(obj){
+        casify(obj,snackCasify);
+    }
+    function rename(obj,convertor){
+        if(isFunction(convertor)){
+            casify(obj,convertor);
+        }else if('object' === typeof convertor){
+            casify(obj,function(originalName){
+                if(undefined === convertor[originalName]){
+                    return originalName;
+                }
+                return convertor[originalName];
+            })
+        }else{
+            throw new Error('convertor must be a function or object');
+        }
     }
     function ObjectUtil(){
         this.constructor.prototype.isNil = isNil;
@@ -283,6 +302,9 @@ window.pck = {};
         //转换属性名 todo:待测试
         this.constructor.prototype.casify = casify;
         this.constructor.prototype.camelCasing = camelCasing;
+        this.constructor.prototype.kebabCasing = kebabCasing;
+        this.constructor.prototype.snackCasing = snackCasing;
+        this.constructor.prototype.rename = rename;
     }
     module.extends(ObjectUtil,Object);
     register("$object",function(){
@@ -505,7 +527,7 @@ window.pck = {};
         return wordList.join('-');
     }
     //todo:
-    function snackCasing(word){
+    function snackCasify(word){
         var regex = /[a-zA-Z0-9\$]+/g;
         var camelRegex = /[A-Z][a-zA-Z0-9\$]*/g;
         var wordList = [];

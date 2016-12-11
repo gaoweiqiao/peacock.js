@@ -1,2 +1,3 @@
+[TOC]
 # peacock.js
-a library base on Vue.js
+a util library
