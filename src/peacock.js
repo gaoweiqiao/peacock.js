@@ -63,19 +63,27 @@ window.pck = {};
     }
     function Url(){
 
-        var url = window.location.href;
-        var params = __getKeyValueFromUrl(window.location.href.search);
+        var url = location.href;
+        var params = __getKeyValueFromUrl(location.search);
         /**
          *  url 定义属性
          * */
         Object.defineProperty(this,"url",{
             get:function(){
-                return window.location.href;
+                return location.href;
+            }
+        });
+        Object.defineProperty(this,"params",{
+            get:function(){
+                if(url !== this.url){
+                    params = __getKeyValueFromUrl(location.search);
+                }
+                return params;
             }
         });
         this.constructor.prototype.query = function(key){
             if(url !== this.url){
-                params = __getKeyValueFromUrl(this.url.search);
+                params = this.params;
             }
             if(undefined !== params[key] && params[key].length > 0){
                 return params[key][0];
@@ -84,7 +92,7 @@ window.pck = {};
         };
         this.constructor.prototype.queryAll = function(key){
             if(url !== this.url){
-                params = __getKeyValueFromUrl(this.url.search);
+                params = this.params;
             }
             return params[key];
         };
@@ -170,7 +178,7 @@ window.pck = {};
      *  $object对象工具函数
      * */
     function isNil(obj){
-        return undefined === object || null === obj;
+        return undefined === obj || null === obj;
     }
     function isFunction(func){
         return 'function' === typeof func;
@@ -278,7 +286,7 @@ window.pck = {};
     }
     module.extends(ObjectUtil,Object);
     register("$object",function(){
-        return ObjectUtil();
+        return new ObjectUtil();
     });
     /**
      *  $Date 日期时间工具方法
@@ -398,14 +406,14 @@ window.pck = {};
         if(leftPadCount > 0){
             var leftRepeatCount = Math.floor(leftPadCount / chars.length);
             var leftRestCharCount = leftPadCount % chars.length;
-            resultStringList.push(this.repeat(chars,leftRepeatCount));
+            resultStringList.push(repeat(chars,leftRepeatCount));
             resultStringList.push(chars.slice(0,leftRestCharCount));
         }
         resultStringList.push(string);
         if(rightPadCount > 0){
             var rightRepeatCount = Math.floor(rightPadCount / chars.length);
             var rightRestCharCount = rightPadCount % chars.length;
-            resultStringList.push(this.repeat(chars,rightRepeatCount));
+            resultStringList.push(repeat(chars,rightRepeatCount));
             resultStringList.push(chars.slice(0,rightRestCharCount));
         }
 
@@ -417,14 +425,14 @@ window.pck = {};
         if(length > string.length){
             leftPadCount = length - string.length;
         }
-        return this.padBoth(string,leftPadCount,0,chars);
+        return padBoth(string,leftPadCount,0,chars);
     }
     function padRight(string,length,chars){
         var rightPadCount = 0;
         if(length > string.length){
             rightPadCount = length - string.length;
         }
-        return this.padBoth(string,0,rightPadCount,chars);
+        return padBoth(string,0,rightPadCount,chars);
     }
     function pad(string,length,chars){
         var leftPadCount = 0;

@@ -9,6 +9,7 @@ function assert(option){
         throw new Error(option.error);
     }
 }
+console.log("unit test peacock @version-"+pck.version);
 /**
  * 测试$share是不是能共存一个对象
  * */
@@ -24,7 +25,80 @@ pck.use(['$share'],function($share){
         error:'$share fail'
     });
 });
+/**
+ *  测试url
+ * */
+var url = location.protocol+'//'+location.host+location.pathname+"?a=高&b=1&a=abc#gao";
+location.href = url;
+pck.use(['$url'],function($url){
+    assert({
+       test:function(){
+           var params = $url.params;
+           var paramA = $url.queryAll('a');
+           return '1' === $url.query('b') &&
+               '高' === paramA[0] &&
+               'abc' === paramA[1];
+       },
+       success:'$url.query and $url.queryAll test pass'
+    });
+    assert({
+        test:function(){
+            return (
+                '/index?a=1&b=abc#gao' === $url.genUrl({
+                    path:'/index',
+                    params:{a:1,b:'abc'},
+                    hash: 'gao'
+                }) &&
+                'https://www.pabipabi.com:8080/test/a/b/c?name=gaoweiqiao&age=1&id=123#高' === $url.genUrl({
+                    protocol:'https',
+                    host:'www.pabipabi.com',
+                    port: 8080,
+                    path: '/test/a/b/c',
+                    params: {name:'gaoweiqiao',age:1,id:123},
+                    hash: '高'
+                })
+            );
+        },
+        success:'$url.genUrl test pass',
+        error: '$url.genUrl test fail'
+    });
 
+});
+/**
+ * 测试 $object
+ **/
+pck.use(['$object'],function($object){
+    assert({
+        test:function(){
+            return (
+                true === $object.isNil(null) &&
+                true === $object.isNil(undefined) &&
+                false === $object.isNil(0) &&
+                false === $object.isNil('') &&
+                false === $object.isNil(false)
+            )
+        },
+        success:'$object.isNil test pass'
+    });
+    assert({
+        test:function(){
+            return (
+                true === $object.isFunction(function(){}) &&
+                false === $object.isFunction({a:1})
+            )
+        },
+        success:'$object.isFunction test pass'
+    });
+    assert({
+        test:function(){
+            return (
+                JSON.stringify(['11','b_b','c+1','d-2']) === JSON.stringify($object.keyPath('11.b_b["c+1"][\'d-2\']'))
+            )
+        },
+        success:'$object.keyPath test pass'
+    });
+    //todo: getKeyPath
+});
 /**
  * 测试 $string
  */
