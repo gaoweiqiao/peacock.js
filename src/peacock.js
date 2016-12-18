@@ -214,20 +214,20 @@ window.pck = {};
         }
         return obj;
     }
-    function setKeyPath(obj,keyPath,value){
+    function setKeyPath(obj,keyPathString,value){
         if(null === obj || undefined === obj || "object" !== typeof obj){
             return obj;
         }
-        var pathList = keyPath(keyPath);
+        var pathList = keyPath(keyPathString);
         var prop = obj;
         for(var i=0;i<pathList.length;i++){
-            prop = prop[pathList[i]];
-            if(pathList.length - 2 !== i){
+            if(pathList.length - 1 !== i){
+                prop = prop[pathList[i]];
                 if(undefined === prop){
                     break;
                 }
             }else{
-                prop[pathList[i+1]] = value;
+                prop[pathList[i]] = value;
             }
         }
         return obj;
@@ -574,7 +574,7 @@ window.pck = {};
         //转变为减号连接
         this.constructor.prototype.kebabCasify = kebabCasify;
         //转变为下划线连接
-        this.constructor.prototype.snackCasing = snackCasing;
+        this.constructor.prototype.snackCasify = snackCasify;
     }
     module.extends(StringUtil,Object);
     register("$string",function(){
@@ -583,12 +583,22 @@ window.pck = {};
     /**
      *  $number 数字方法
      * */
-    var isInteger = function(i){
-        return (!isNaN(i)) && Math.floor(i) === i;
-    };
+    function isNumber(number){
+        return 'number' === typeof number;
+    }
+    function isInteger(number){
+        return isNumber(number) && 0 === number % 1;
+    }
+    function isFloat(number){
+        return isNumber(number) && 0 !== number % 1;
+    }
     function NumberUtil(){
         //判断是不是整数
+        this.constructor.prototype.isNumber = isNumber;
+        //判断是不是整数
         this.constructor.prototype.isInteger = isInteger;
+        //判断是不是浮点数
+        this.constructor.prototype.isFloat = isFloat;
     }
     module.extends(NumberUtil,Object);
     register("$number",function(){
