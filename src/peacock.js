@@ -144,6 +144,17 @@ window.pck = {};
         return new Url();
     });
     /**
+     *  $db方法
+     * */
+    //todo:not implement
+    function Database(){
+
+    }
+    module.extends(Database,Object);
+    register('$db',function(){
+        return new Database();
+    });
+    /**
      *  log相关方法
      * */
     var __prettyLog = function(loglevel){
@@ -238,6 +249,7 @@ window.pck = {};
         }
         return objOrFunction;
     }
+    //convert function(oldName)=>newName;
     function casify(obj,convert){
         if ('object' === typeof obj){
             for(var name in obj){
@@ -299,7 +311,6 @@ window.pck = {};
         this.constructor.prototype.getKeyPath = getKeyPath;
         this.constructor.prototype.setKeyPath = setKeyPath;
         this.constructor.prototype.getValue = getValue;
-        //转换属性名 todo:待测试
         this.constructor.prototype.casify = casify;
         this.constructor.prototype.camelCasing = camelCasing;
         this.constructor.prototype.kebabCasing = kebabCasing;
@@ -320,7 +331,8 @@ window.pck = {};
         var timestamp = date.getTime()+60*60*1000*24*delta;
         return new Date(timestamp);
     }
-    function format(template,date,padLeft){
+    //convertor : function('yyyy',2016)=>'2016年'
+    function format(template,date,convertor){
         if(!isNaN(date)){
             date = new Date(date);
         }
@@ -329,41 +341,56 @@ window.pck = {};
         var lastIndex = 0;
         var dateComponent = null;
         var stringUtil = new StringUtil();
-        function padLeftDate(n,repeatCount){
-            if(padLeft){
-                stringUtil.padLeft(n+"",repeatCount,"0")
+        function transform(template,number){
+            if(convertor){
+                var result = convertor(template,number);
+                if(undefined === result){
+                    throw new Error('converter must return something');
+                }
+                return result;
             }
-            return n;
+            return number;
         }
         while(dateComponent = regex.exec(template)){
             dateStringList.push(template.slice(lastIndex,dateComponent.index));
-            if("yyyy" === dateComponent[0]){
-                dateStringList.push(date.getFullYear());
-            }else if("MM" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getMonth()+1));
-            }else if("dd" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getDate()));
-            }else if("HH" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getHours()));
-            }else if("mm" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getMinutes()));
-            }else if("ss" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getSeconds()));
-            }else if("z" === dateComponent[0]){
-                dateStringList.push(padLeftDate(date.getMilliseconds()));
+            var templateFragment = dateComponent[0];
+            if("yyyy" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getFullYear()));
+            }else if("MM" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getMonth()+1));
+            }else if("dd" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getDate()));
+            }else if("HH" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getHours()));
+            }else if("mm" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getMinutes()));
+            }else if("ss" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getSeconds()));
+            }else if("z" === templateFragment){
+                dateStringList.push(transform(templateFragment,date.getMilliseconds()));
             }
-            lastIndex = dateComponent.index+dateComponent[0].length;
+            lastIndex = dateComponent.index+templateFragment.length;
         }
         return dateStringList.join("");
     }
+    //todo:parse
+    function parseDate(template,date){
+        throw new Error('no implement error');
+    }
+    function dateEquals(date0,date1){
+        return date0.getTime() === date1.getTime();
+    }
     function DateUtil(){
-
         //获取凌晨0点的Date对象
         this.constructor.prototype.getDayBreak = getDayBreak;
         //增加n天,负数为减天数
         this.constructor.prototype.addDay = addDay;
         //格式化日期
         this.constructor.prototype.format = format;
+        //解析日期
+        this.constructor.prototype.parse = parseDate;
+        //判断两个对象相等
+        this.constructor.prototype.equals = dateEquals;
     }
     module.extends(DateUtil,Object);
     register("$date",function(){
@@ -494,16 +521,20 @@ window.pck = {};
         while (result = regex.exec(word)){
             (function(){
                 var wordFragment = result[0];
-                wordList.push(wordFragment[0].toUpperCase());
+                var firstLetter = wordFragment[0];
+                if(0 === wordList.length){
+                    wordList.push(firstLetter.toLowerCase());
+                }else{
+                    wordList.push(firstLetter.toUpperCase());
+                }
                 wordList.push(wordFragment.slice(1));
             }());
         }
         return wordList.join('');
     }
-    //todo:
     function kebabCasify(word){
         var regex = /[a-zA-Z0-9\$]+/g;
-        var camelRegex = /[A-Z][a-zA-Z0-9\$]*/g;
+        var camelRegex = /[A-Z][a-z0-9\$]*/g;
         var wordList = [];
         var result;
         while (result = regex.exec(word)){
@@ -529,22 +560,22 @@ window.pck = {};
     //todo:
     function snackCasify(word){
         var regex = /[a-zA-Z0-9\$]+/g;
-        var camelRegex = /[A-Z][a-zA-Z0-9\$]*/g;
+        var snakeRegex = /[A-Z][a-z0-9\$]*/g;
         var wordList = [];
         var result;
         while (result = regex.exec(word)){
             (function(){
                 var wordFragment = result[0];
                 //
-                var camelResult = camelRegex.exec(wordFragment);
-                if(camelResult){
-                    if(camelResult.index > 0){
-                        wordList.push(wordFragment.slice(0,camelResult.index).toLowerCase());
+                var snakeResult = snakeRegex.exec(wordFragment);
+                if(snakeResult){
+                    if(snakeResult.index > 0){
+                        wordList.push(wordFragment.slice(0,snakeResult.index).toLowerCase());
                     }
                     do{
-                        wordList.push(camelResult[0].toLowerCase());
+                        wordList.push(snakeResult[0].toLowerCase());
                     }
-                    while (camelResult = camelRegex.exec(wordFragment));
+                    while (snakeResult = snakeRegex.exec(wordFragment));
                 }else{
                     wordList.push(wordFragment);
                 }

@@ -198,6 +198,161 @@ pck.use(['$object'],function($object){
         },
         success:'$object.getValue test pass'
     });
+    assert({
+        test:function(){
+            var data = {
+                name: 'gao',
+                hobby: 'coding',
+                teacher:{
+                    name:'song',
+                    age: 1
+                }
+            };
+            $object.casify(data,function(oldName){
+                return ['$',oldName,'$'].join('');
+            });
+            return (
+                data.name === data['$name$'] &&
+                data.hobby === data['$hobby$'] &&
+                data.teacher === data['$teacher$'] &&
+                data.teacher.name === data['$teacher$']['$name$'] &&
+                data.teacher.age === data['$teacher$']['$age$']
+            );
+        },
+        success:'$object.casify test pass'
+    });
+    assert({
+        test:function(){
+            var data = {
+                'my name': 'gao',
+                'my$hobby': 'coding',
+                '_teacher_':{
+                    'my-name':'song',
+                    'my_age': 1
+                }
+            };
+            $object.camelCasing(data);
+            return (
+                data['my name'] === data['myName'] &&
+                data['my$hobby'] === data['my$hobby'] &&
+                data['_teacher_'] === data['teacher'] &&
+                data['_teacher_']['my-name'] === data['teacher']['myName'] &&
+                data['_teacher_']['my_age']  === data['teacher']['myAge']
+            );
+        },
+        success:'$object.camelCasing test pass'
+    });
+    assert({
+        test:function(){
+            var data = {
+                'my name': 'gao',
+                'my$hobby': 'coding',
+                'TheTeacher_':{
+                    'my-name':'song',
+                    'my__Age': 1
+                }
+            };
+            $object.kebabCasing(data);
+            return (
+                data['my name'] === data['my-name'] &&
+                data['my$hobby'] === data['my$hobby'] &&
+                data['TheTeacher_'] === data['the-teacher'] &&
+                data['TheTeacher_']['my-name'] === data['the-teacher']['my-name'] &&
+                data['TheTeacher_']['my__Age']  === data['the-teacher']['my-age']
+            );
+        },
+        success:'$object.kebabCasing test pass'
+    });
+    assert({
+        test:function(){
+            var data = {
+                'my name': 'gao',
+                'my$hobby': 'coding',
+                'TheTeacher_':{
+                    'my-name':'song',
+                    'my__Age': 1
+                }
+            };
+            $object.snackCasing(data);
+            return (
+                data['my name'] === data['my_name'] &&
+                data['my$hobby'] === data['my$hobby'] &&
+                data['TheTeacher_'] === data['the_teacher'] &&
+                data['TheTeacher_']['my-name'] === data['the_teacher']['my_name'] &&
+                data['TheTeacher_']['my__Age']  === data['the_teacher']['my_age']
+            );
+        },
+        success:'$object.snakeCasing test pass'
+    });
+    assert({
+        test:function(){
+            var data = {
+                'my name': 'gao',
+                'my$hobby': 'coding',
+                'TheTeacher_':{
+                    'my name':'song',
+                    'my__Age': 1,
+                    'score':150
+                }
+            };
+            $object.rename(data,{
+                'my name':'eman ym',
+                'my$hobby': 'ybboh$ym',
+                'TheTeacher_': 'this is the teacher',
+                'my__Age':'unknown',
+                'score':'integer'
+            });
+            return (
+                data['my name'] === data['eman ym'] &&
+                data['my$hobby'] === data['my$hobby'] &&
+                data['TheTeacher_'] === data['this is the teacher'] &&
+                data['TheTeacher_']['my name'] === data['this is the teacher']['eman ym'] &&
+                data['TheTeacher_']['my__Age']  === data['this is the teacher']['unknown']&&
+                data['TheTeacher_']['score']  === data['this is the teacher']['integer']
+            );
+        },
+        success:'$object.rename test pass'
+    });
+});
+/**
+ * 测试$date
+ * */
+pck.use(['$date'],function($date){
+    assert({
+        test:function(){
+            var now = new Date();
+            now.setHours(0);
+            now.setMinutes(0);
+            now.setSeconds(0);
+            now.setMilliseconds(0);
+            //
+            var date = new Date(2016,11,20,21,24,46,456);
+            return (
+                now.getTime() === $date.getDayBreak(new Date()).getTime()
+            );
+        },
+        success:'$date.getDayBreak test pass'
+    });
+    assert({
+        test:function(){
+            var date0 = new Date(2016,11,20,21,24,46,456);
+            date0.setTime(date0.getTime()-24*60*60*1000);
+            var date1 = new Date(2016,11,20,21,24,46,456);
+            //
+            var date = new Date(2016,11,20,21,24,1,456);
+            return (
+                date0.getTime() === $date.addDay(date1,-1).getTime()&&
+                '2016-12-20 21:24:01$456' === $date.format('yyyy-MM-dd HH:mm:ss$z',date,function(tmplate,number){
+                    if(number < 10){
+                        return '0'+number;
+                    }
+                    return number;
+                })&&
+                $date.equals(date0,$date.addDay(date1,-1))
+            );
+        },
+        success:'$date.addDay and $date.format test pass'
+    });
 });
 /**
  * 测试 $string
@@ -211,8 +366,8 @@ pck.use(['$string'],function($string){
     });
     assert({
        test:function(){
-           return ('AbcZxc' === $string.camelCasify(' abc zxc') &&
-                    'Abc1Qw2$Gfd' === $string.camelCasify('_abc1___qw2$_gfd') &&
+           return ('abcZxc' === $string.camelCasify(' abc zxc') &&
+                    'abc1Qw2$Gfd' === $string.camelCasify('_abc1___qw2$_gfd') &&
                    '$aSdFaHjGd' === $string.camelCasify('$aSd-fa_hj+Gd')
            );
        },
