@@ -717,6 +717,7 @@ window.pck = {};
     module.config({
         '$share': function(){return module.$share},
         '$url': function(){return module.$url},
+        '$db': function(){return module.$db},
         '$log': function(){return module.$log},
         '$util': function(){return module.$util},
         '$object': function(){return module.$object},
