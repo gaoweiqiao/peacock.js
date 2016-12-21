@@ -32,118 +32,118 @@ window.pck = {};
     module.extends = function(Child,Parent){
         var F = function () {};
         F.prototype = Parent.prototype;
-        var f = new F();
-        Child.prototype = f;
-        f.constructor = Child;
+        Child.prototype = new F();
+        Child.prototype.constructor = Child;
     };
-    /**
-     *  向全局对象里添加,获取,删除对象
-     **/
-    function Share(){
 
-    }
-    module.extends(Share,Object);
-    register("$share",function(){
-        return new Share();
-    });
-    /**
-     *  url参数相关操作方法
-     * */
-    function __getKeyValueFromUrl(queryString){
-        var queryParam = {};
-        var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
-        //
-        var kv;
-        while(kv = regex.exec(queryString)){
-            if(!queryParam.hasOwnProperty(kv[1])){
-                queryParam[kv[1]] = [];
-            }
-            queryParam[kv[1]].push(decodeURI(kv[2]));
-        }
-        return queryParam;
-    }
-    function Url(){
-
-        var url = location.href;
-        var params = __getKeyValueFromUrl(location.search);
-        /**
-         *  url 定义属性
-         * */
-        Object.defineProperty(this,"url",{
-            get:function(){
-                return location.href;
-            }
-        });
-        Object.defineProperty(this,"params",{
-            get:function(){
-                if(url !== this.url){
-                    params = __getKeyValueFromUrl(location.search);
-                }
-                return params;
-            }
-        });
-        this.constructor.prototype.query = function(key){
-            if(url !== this.url){
-                params = this.params;
-            }
-            if(undefined !== params[key] && params[key].length > 0){
-                return params[key][0];
-            }
-            return undefined;
-        };
-        this.constructor.prototype.queryAll = function(key){
-            if(url !== this.url){
-                params = this.params;
-            }
-            return params[key];
-        };
-        /**
-         *  options 包括protocol,host,port,path,params,hash
-         * */
-        this.constructor.prototype.genUrl = function(options){
-            var urlFragmentList = [];
-
-            if(options.host){
-                var protocol = options.protocol ? options.protocol+"://" : "http://";
-                var host = options.host ? options.host : "";
-                var port = options.port ? ":"+options.port : "";
-                urlFragmentList.push(protocol);
-                urlFragmentList.push(host);
-                urlFragmentList.push(port);
-            }
-            if(undefined === options.path){
-                throw new Error("path must not be undefined");
-            }else{
-                if("/" !== options.path.charAt(0)){
-                    urlFragmentList.splice(0);
-                }
-                urlFragmentList.push(options.path);
-                (function(){
-                    var prefix = "?";
-                    for(var key in options.params){
-                        if(options.params.hasOwnProperty(key)){
-                            urlFragmentList.push(prefix);
-                            urlFragmentList.push(key);
-                            urlFragmentList.push("=");
-                            urlFragmentList.push(options.params[key]);
-                            if("?" === prefix){
-                                prefix = "&";
-                            }
-                        }
-                    }
-                }());
-                if(undefined !== options.hash){
-                    urlFragmentList.push("#");
-                    urlFragmentList.push(options.hash);
-                }
-            }
-            return urlFragmentList.join("");
-        };
-    }
-    module.extends(Url,Object);
-    register("$url",function(){
-        return new Url();
-    });
+    ///**
+    // *  向全局对象里添加,获取,删除对象
+    // **/
+    //function Share(){
+    //
+    //}
+    //module.extends(Share,Object);
+    //register("$share",function(){
+    //    return new Share();
+    //});
+    ///**
+    // *  url参数相关操作方法
+    // * */
+    //function __getKeyValueFromUrl(queryString){
+    //    var queryParam = {};
+    //    var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
+    //    //
+    //    var kv;
+    //    while(kv = regex.exec(queryString)){
+    //        if(!queryParam.hasOwnProperty(kv[1])){
+    //            queryParam[kv[1]] = [];
+    //        }
+    //        queryParam[kv[1]].push(decodeURI(kv[2]));
+    //    }
+    //    return queryParam;
+    //}
+    //function Url(){
+    //
+    //    var url = location.href;
+    //    var params = __getKeyValueFromUrl(location.search);
+    //    /**
+    //     *  url 定义属性
+    //     * */
+    //    Object.defineProperty(this,"url",{
+    //        get:function(){
+    //            return location.href;
+    //        }
+    //    });
+    //    Object.defineProperty(this,"params",{
+    //        get:function(){
+    //            if(url !== this.url){
+    //                params = __getKeyValueFromUrl(location.search);
+    //            }
+    //            return params;
+    //        }
+    //    });
+    //    this.constructor.prototype.query = function(key){
+    //        if(url !== this.url){
+    //            params = this.params;
+    //        }
+    //        if(undefined !== params[key] && params[key].length > 0){
+    //            return params[key][0];
+    //        }
+    //        return undefined;
+    //    };
+    //    this.constructor.prototype.queryAll = function(key){
+    //        if(url !== this.url){
+    //            params = this.params;
+    //        }
+    //        return params[key];
+    //    };
+    //    /**
+    //     *  options 包括protocol,host,port,path,params,hash
+    //     * */
+    //    this.constructor.prototype.genUrl = function(options){
+    //        var urlFragmentList = [];
+    //
+    //        if(options.host){
+    //            var protocol = options.protocol ? options.protocol+"://" : "http://";
+    //            var host = options.host ? options.host : "";
+    //            var port = options.port ? ":"+options.port : "";
+    //            urlFragmentList.push(protocol);
+    //            urlFragmentList.push(host);
+    //            urlFragmentList.push(port);
+    //        }
+    //        if(undefined === options.path){
+    //            throw new Error("path must not be undefined");
+    //        }else{
+    //            if("/" !== options.path.charAt(0)){
+    //                urlFragmentList.splice(0);
+    //            }
+    //            urlFragmentList.push(options.path);
+    //            (function(){
+    //                var prefix = "?";
+    //                for(var key in options.params){
+    //                    if(options.params.hasOwnProperty(key)){
+    //                        urlFragmentList.push(prefix);
+    //                        urlFragmentList.push(key);
+    //                        urlFragmentList.push("=");
+    //                        urlFragmentList.push(options.params[key]);
+    //                        if("?" === prefix){
+    //                            prefix = "&";
+    //                        }
+    //                    }
+    //                }
+    //            }());
+    //            if(undefined !== options.hash){
+    //                urlFragmentList.push("#");
+    //                urlFragmentList.push(options.hash);
+    //            }
+    //        }
+    //        return urlFragmentList.join("");
+    //    };
+    //}
+    //module.extends(Url,Object);
+    //register("$url",function(){
+    //    return new Url();
+    //});
     /**
      *  $db方法
      * */
@@ -176,6 +176,7 @@ window.pck = {};
 
         function Operation(){
             this.tableName = undefined;
+
         }
         module.extends(Operation,Object);
         Operation.prototype.operate = function(data){
@@ -205,7 +206,6 @@ window.pck = {};
             }
         };
 
-
         //查询操作
         function QueryOperation(){
             QueryOperation.prototype.operate = function(data){
@@ -215,7 +215,7 @@ window.pck = {};
         module.extends(QueryOperation,Operation);
         //删除操作
         function DeleteOperation(){
-            this.constructor.prototype.operate = function(data){
+            DeleteOperation.prototype.operate = function(data){
                 var dataSet = Cache.getData(this.tableName);
                 var filteredDataSet = [];
                 dataSet.forEach(function(item){
@@ -230,7 +230,7 @@ window.pck = {};
         module.extends(DeleteOperation,Operation);
         //更新操作
         function UpdateOperation(update){
-            this.constructor.prototype.operate = function(data){
+            UpdateOperation.prototype.operate = function(data){
                 data.forEach(function(item){
                     update(item);
                 });
@@ -238,6 +238,7 @@ window.pck = {};
             };
         }
         module.extends(UpdateOperation,Operation);
+
         //插入操作//batch:true/false
         function InsertOperation(data,batch){
             this.constructor.prototype.into = function(tableName){
