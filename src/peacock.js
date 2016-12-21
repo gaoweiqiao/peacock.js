@@ -32,8 +32,9 @@ window.pck = {};
     module.extends = function(Child,Parent){
         var F = function () {};
         F.prototype = Parent.prototype;
-        Child.prototype = new F();
-        Child.prototype.constructor = Child;
+        var f = new F();
+        Child.prototype = f;
+        f.constructor = Child;
     };
     /**
      *  向全局对象里添加,获取,删除对象
@@ -147,8 +148,135 @@ window.pck = {};
      *  $db方法
      * */
     //todo:not implement
+    var Cache = (function(){
+        var dataSet = {};
+        return {
+            getData:function(name){
+                if(undefined === dataSet[name]){
+                    var dataString = sessionStorage.getItem(name);
+                    dataSet[name] = dataString ? JSON.parse(dataString) : [];
+                }
+                return dataSet[name];
+            },
+            setData:function(name,data){
+                dataSet[name] = data;
+            },
+            sync:function(name){
+                if(0 === dataSet[name].length){
+                    sessionStorage.removeItem(name);
+                }else{
+                    sessionStorage.setItem(name,JSON.stringify(dataSet[name]));
+                }
+
+            }
+        }
+    }());
+
     function Database(){
 
+        function Operation(){
+            this.tableName = undefined;
+        }
+        module.extends(Operation,Object);
+        Operation.prototype.operate = function(data){
+            throw new Error("Opration don't implements.");
+        };
+        Operation.prototype.from = function(tableName){
+            this.tableName = tableName;
+            //dataSet = Cache.getData(tableName);
+            return this;
+        };
+        Operation.prototype.where = function(condition){
+            var data = [];
+            var dataSet = Cache.getData(this.tableName);
+            if(isFunction(condition)){
+                if(undefined === dataSet){
+                    throw new Error("No table to query");
+                    return;
+                }
+                dataSet.forEach(function(item,index){
+                    if(condition(item)){
+                        data.push(item);
+                    }
+                });
+                return this.operate(data)
+            }else{
+                throw new Error('condition must be a function');
+            }
+        };
+
+
+        //查询操作
+        function QueryOperation(){
+            QueryOperation.prototype.operate = function(data){
+                return data;
+            };
+        }
+        module.extends(QueryOperation,Operation);
+        //删除操作
+        function DeleteOperation(){
+            this.constructor.prototype.operate = function(data){
+                var dataSet = Cache.getData(this.tableName);
+                var filteredDataSet = [];
+                dataSet.forEach(function(item){
+                    if(-1 === data.indexOf(item)){
+                        filteredDataSet.push(item);
+                    }
+                });
+                Cache.setData(this.tableName,filteredDataSet);
+                Cache.sync(this.tableName);
+            };
+        }
+        module.extends(DeleteOperation,Operation);
+        //更新操作
+        function UpdateOperation(update){
+            this.constructor.prototype.operate = function(data){
+                data.forEach(function(item){
+                    update(item);
+                });
+                Cache.sync(this.tableName);
+            };
+        }
+        module.extends(UpdateOperation,Operation);
+        //插入操作//batch:true/false
+        function InsertOperation(data,batch){
+            this.constructor.prototype.into = function(tableName){
+                var dataSet = Cache.getData(tableName);
+                if(batch){
+                    data.forEach(function(item){
+                        dataSet.push(item);
+                    });
+                }else{
+                    dataSet.push(data);
+                }
+                Cache.sync(tableName);
+            };
+        }
+        module.extends(InsertOperation,Object);
+        //查询
+        this.constructor.prototype.select = function(){
+            return new QueryOperation();
+        };
+        //删除
+        this.constructor.prototype.delete = function(){
+            return new DeleteOperation();
+        };
+        //更新
+        this.constructor.prototype.update = function(update){
+            return new UpdateOperation(update);
+        };
+        //插入
+        this.constructor.prototype.insert = function(data){
+            return new InsertOperation(data,false);
+        };
+        //批量插入
+        this.constructor.prototype.insertBatch = function(dataList){
+            if(Array.isArray(dataList)){
+                return new InsertOperation(data,true);
+            }else{
+                throw new Error("insertBatch must be passed array param");
+            }
+        }
     }
     module.extends(Database,Object);
     register('$db',function(){

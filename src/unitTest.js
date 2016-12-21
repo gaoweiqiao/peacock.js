@@ -393,4 +393,19 @@ pck.use(['$string'],function($string){
         error: "$string.snackCasing don't test pass"
     });
 });
+/**
+ * 测试$db
+ * */
+pck.use(['$db'],function($db){
+    var data = {name:'gao',age:27};
+    var condition = function(item){
+        return 'gao' === item.name;
+    };
+    $db.insert(data).into('test');
+    var result = $db.select().from('test').where(condition);
+    $db.update(function(item){
+        item.age++;
+    }).from('test').where(condition);
+    $db.delete().from('test').where(condition);
+});
 
