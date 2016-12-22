@@ -36,118 +36,111 @@ window.pck = {};
         Child.prototype.constructor = Child;
     };
 
-    ///**
-    // *  向全局对象里添加,获取,删除对象
-    // **/
-    //function Share(){
-    //
-    //}
-    //module.extends(Share,Object);
-    //register("$share",function(){
-    //    return new Share();
-    //});
-    ///**
-    // *  url参数相关操作方法
-    // * */
-    //function __getKeyValueFromUrl(queryString){
-    //    var queryParam = {};
-    //    var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
-    //    //
-    //    var kv;
-    //    while(kv = regex.exec(queryString)){
-    //        if(!queryParam.hasOwnProperty(kv[1])){
-    //            queryParam[kv[1]] = [];
-    //        }
-    //        queryParam[kv[1]].push(decodeURI(kv[2]));
-    //    }
-    //    return queryParam;
-    //}
-    //function Url(){
-    //
-    //    var url = location.href;
-    //    var params = __getKeyValueFromUrl(location.search);
-    //    /**
-    //     *  url 定义属性
-    //     * */
-    //    Object.defineProperty(this,"url",{
-    //        get:function(){
-    //            return location.href;
-    //        }
-    //    });
-    //    Object.defineProperty(this,"params",{
-    //        get:function(){
-    //            if(url !== this.url){
-    //                params = __getKeyValueFromUrl(location.search);
-    //            }
-    //            return params;
-    //        }
-    //    });
-    //    this.constructor.prototype.query = function(key){
-    //        if(url !== this.url){
-    //            params = this.params;
-    //        }
-    //        if(undefined !== params[key] && params[key].length > 0){
-    //            return params[key][0];
-    //        }
-    //        return undefined;
-    //    };
-    //    this.constructor.prototype.queryAll = function(key){
-    //        if(url !== this.url){
-    //            params = this.params;
-    //        }
-    //        return params[key];
-    //    };
-    //    /**
-    //     *  options 包括protocol,host,port,path,params,hash
-    //     * */
-    //    this.constructor.prototype.genUrl = function(options){
-    //        var urlFragmentList = [];
-    //
-    //        if(options.host){
-    //            var protocol = options.protocol ? options.protocol+"://" : "http://";
-    //            var host = options.host ? options.host : "";
-    //            var port = options.port ? ":"+options.port : "";
-    //            urlFragmentList.push(protocol);
-    //            urlFragmentList.push(host);
-    //            urlFragmentList.push(port);
-    //        }
-    //        if(undefined === options.path){
-    //            throw new Error("path must not be undefined");
-    //        }else{
-    //            if("/" !== options.path.charAt(0)){
-    //                urlFragmentList.splice(0);
-    //            }
-    //            urlFragmentList.push(options.path);
-    //            (function(){
-    //                var prefix = "?";
-    //                for(var key in options.params){
-    //                    if(options.params.hasOwnProperty(key)){
-    //                        urlFragmentList.push(prefix);
-    //                        urlFragmentList.push(key);
-    //                        urlFragmentList.push("=");
-    //                        urlFragmentList.push(options.params[key]);
-    //                        if("?" === prefix){
-    //                            prefix = "&";
-    //                        }
-    //                    }
-    //                }
-    //            }());
-    //            if(undefined !== options.hash){
-    //                urlFragmentList.push("#");
-    //                urlFragmentList.push(options.hash);
-    //            }
-    //        }
-    //        return urlFragmentList.join("");
-    //    };
-    //}
-    //module.extends(Url,Object);
-    //register("$url",function(){
-    //    return new Url();
-    //});
+    /**
+     *  向全局对象里添加,获取,删除对象
+     **/
+    function Share(){}
+    module.extends(Share,Object);
+    register("$share",function(){
+        return new Share();
+    });
+    /**
+     *  url参数相关操作方法
+     * */
+    function __getKeyValueFromUrl(queryString){
+        var queryParam = {};
+        var regex = /([0-9a-zA-Z%_\-\+]+)=([0-9a-zA-Z%_\-\+]+)/gi;
+        //
+        var kv;
+        while(kv = regex.exec(queryString)){
+            if(!queryParam.hasOwnProperty(kv[1])){
+                queryParam[kv[1]] = [];
+            }
+            queryParam[kv[1]].push(decodeURI(kv[2]));
+        }
+        return queryParam;
+    }
+    function Url(){
+        var url = location.href;
+        var params = __getKeyValueFromUrl(location.search);
+        /**
+         *  url 定义属性
+         * */
+        Object.defineProperty(this,"url",{
+            get:function(){
+                return location.href;
+            }
+        });
+        Object.defineProperty(this,"params",{
+            get:function(){
+                if(url !== this.url){
+                    params = __getKeyValueFromUrl(location.search);
+                    url = this.url;
+                }
+                return params;
+            }
+        });
+    }
+    module.extends(Url,Object);
+    Url.prototype.query = function(key){
+        var params = this.params;
+        if(undefined !== params[key] && params[key].length > 0){
+            return params[key][0];
+        }
+        return undefined;
+    };
+    Url.prototype.queryAll = function(key){
+        return this.params[key];
+    };
+    /**
+     *  options 包括protocol,host,port,path,params,hash
+     * */
+    Url.prototype.genUrl = function(options){
+        var urlFragmentList = [];
+
+        if(options.host){
+            var protocol = options.protocol ? options.protocol+"://" : "http://";
+            var host = options.host ? options.host : "";
+            var port = options.port ? ":"+options.port : "";
+            urlFragmentList.push(protocol);
+            urlFragmentList.push(host);
+            urlFragmentList.push(port);
+        }
+        if(undefined === options.path){
+            throw new Error("path must not be undefined");
+        }else{
+            if("/" !== options.path.charAt(0)){
+                urlFragmentList.splice(0);
+            }
+            urlFragmentList.push(options.path);
+            (function(){
+                var prefix = "?";
+                for(var key in options.params){
+                    if(options.params.hasOwnProperty(key)){
+                        urlFragmentList.push(prefix);
+                        urlFragmentList.push(key);
+                        urlFragmentList.push("=");
+                        urlFragmentList.push(options.params[key]);
+                        if("?" === prefix){
+                            prefix = "&";
+                        }
+                    }
+                }
+            }());
+            if(undefined !== options.hash){
+                urlFragmentList.push("#");
+                urlFragmentList.push(options.hash);
+            }
+        }
+        return urlFragmentList.join("");
+    };
+    register("$url",function(){
+        return new Url();
+    });
     /**
      *  $db方法
      * */
-    //todo:not implement
+    //todo:not implement all
     var Cache = (function(){
         var dataSet = {};
         return {
@@ -167,16 +160,12 @@ window.pck = {};
                 }else{
                     sessionStorage.setItem(name,JSON.stringify(dataSet[name]));
                 }
-
             }
-        }
+        };
     }());
-
     function Database(){
-
         function Operation(){
             this.tableName = undefined;
-
         }
         module.extends(Operation,Object);
         Operation.prototype.operate = function(data){
@@ -188,24 +177,34 @@ window.pck = {};
             return this;
         };
         Operation.prototype.where = function(condition){
+            this.condition = condition;
+            return this;
+        };
+        //Operation.prototype.orderBy = function(comparator){
+        //    this.comparator = comparator;
+        //};
+        //Operation.prototype.groupBy = function(group){
+        //    this.group = group;
+        //};
+        Operation.prototype.execute = function(){
             var data = [];
             var dataSet = Cache.getData(this.tableName);
-            if(isFunction(condition)){
-                if(undefined === dataSet){
-                    throw new Error("No table to query");
-                    return;
-                }
+            if(undefined === dataSet){
+                throw new Error("No table to query");
+                return;
+            }
+            if(isFunction(this.condition)){
                 dataSet.forEach(function(item,index){
-                    if(condition(item)){
+                    if(this.condition(item)){
                         data.push(item);
                     }
-                });
-                return this.operate(data)
+                }.bind(this));
             }else{
-                throw new Error('condition must be a function');
+                data = dataSet;
             }
+            if(this)
+            return this.operate(data);
         };
-
         //查询操作
         function QueryOperation(){
             QueryOperation.prototype.operate = function(data){
@@ -295,19 +294,49 @@ window.pck = {};
             console[loglevel](msg);
         };
     };
-    function Log(){
-        var logLevelList = ['info','log','warn','error'];
-        for(var i=0;i<logLevelList.length;i++){
-            this.constructor.prototype[logLevelList[i]] = __prettyLog(logLevelList[i]);
-        }
-    }
+    function Log(){}
     module.extends(Log,Object);
+    Log.prototype.info = __prettyLog('info');
+    Log.prototype.log = __prettyLog('log');
+    Log.prototype.warn = __prettyLog('warn');
+    Log.prototype.error = __prettyLog('error');
     register("$log",function(){
         return new Log();
     });
     /**
      * 工具类
      * */
+    //function transform(data,rules){
+    //    /**
+    //     * rules:{
+    //     *      'dataKeyPath':{
+    //     *          name:'transformedKeyPath',
+    //     *          type:Number
+    //     *      }
+    //     *      or
+    //     *      'dataKeyPath':'transformedKeyPath'
+    //     * }
+    //     * */
+    //    if('object' === typeof data){
+    //        for(var originalKeyPath in rules){
+    //            if (rules.hasOwnProperty(originalKeyPath)){
+    //                var keyPathList = keyPath(originalKeyPath);
+    //                var cursor = data;
+    //                for(var i=0;i<keyPathList.length;i++){
+    //                    if(Array.isArray(cursor)){
+    //                        cursor.forEach(function(item){
+    //
+    //                        });
+    //                    }else{
+    //
+    //                    }
+    //                }
+    //            }
+    //
+    //        }
+    //    }
+    //    return data;
+    //}
     function Util(){
     }
     module.extends(Util,Object);
@@ -381,14 +410,14 @@ window.pck = {};
     //convert function(oldName)=>newName;
     function casify(obj,convert){
         if ('object' === typeof obj){
-            for(var name in obj){
-                if(obj.hasOwnProperty(name)) {
-                    var casedName = convert(name);
-                    if (Array.isArray(obj)) {
-                        for (var i = 0; i < obj.length; i++) {
-                           casify(obj[i], convert);
-                        }
-                    }else{
+            if (Array.isArray(obj)) {
+                for (var i = 0; i < obj.length; i++) {
+                    casify(obj[i], convert);
+                }
+            }else{
+                for(var name in obj){
+                    if(obj.hasOwnProperty(name)) {
+                        var casedName = convert(name);
                         casify(obj[name], convert);
                         (function (){
                             var originalName = name;
@@ -408,7 +437,6 @@ window.pck = {};
                 }
             }
         }
-
     }
     function camelCasing(obj){
         casify(obj,camelCasify);
@@ -433,20 +461,19 @@ window.pck = {};
             throw new Error('convertor must be a function or object');
         }
     }
-    function ObjectUtil(){
-        this.constructor.prototype.isNil = isNil;
-        this.constructor.prototype.isFunction = isFunction;
-        this.constructor.prototype.keyPath = keyPath;
-        this.constructor.prototype.getKeyPath = getKeyPath;
-        this.constructor.prototype.setKeyPath = setKeyPath;
-        this.constructor.prototype.getValue = getValue;
-        this.constructor.prototype.casify = casify;
-        this.constructor.prototype.camelCasing = camelCasing;
-        this.constructor.prototype.kebabCasing = kebabCasing;
-        this.constructor.prototype.snackCasing = snackCasing;
-        this.constructor.prototype.rename = rename;
-    }
+    function ObjectUtil(){}
     module.extends(ObjectUtil,Object);
+    ObjectUtil.prototype.isNil = isNil;
+    ObjectUtil.prototype.isFunction = isFunction;
+    ObjectUtil.prototype.keyPath = keyPath;
+    ObjectUtil.prototype.getKeyPath = getKeyPath;
+    ObjectUtil.prototype.setKeyPath = setKeyPath;
+    ObjectUtil.prototype.getValue = getValue;
+    ObjectUtil.prototype.casify = casify;
+    ObjectUtil.prototype.camelCasing = camelCasing;
+    ObjectUtil.prototype.kebabCasing = kebabCasing;
+    ObjectUtil.prototype.snackCasing = snackCasing;
+    ObjectUtil.prototype.rename = rename;
     register("$object",function(){
         return new ObjectUtil();
     });
@@ -502,26 +529,57 @@ window.pck = {};
         }
         return dateStringList.join("");
     }
-    //todo:parse
-    function parseDate(template,date){
-        throw new Error('no implement error');
+    //todo:换特殊的正则表达式字符再测一测
+    function parseDate(template,dateString){
+        //解析模板
+        var regex = /(yyyy|MM|dd|HH|mm|ss|z)/g;
+        var parseRules = ['yyyy','MM','dd','HH','mm','ss','z'];
+        var parseRulesRegex = ['\\d{4}','\\d{1,2}','\\d{1,2}','\\d{1,2}','\\d{1,2}','\\d{1,2}','\\d{1,3}'];
+
+        var dateComponentsOrder = [];
+        var last = 0;
+        var resultList = [];
+        var result;
+        while ( result = regex.exec(template)){
+            resultList.push(template.slice(last,result.index));
+            dateComponentsOrder.push(parseRules.indexOf(result[0]));
+            last = result.index + result[0].length;
+        }
+        //生成正则表达式
+        var dateRegexList = [];
+        for(var i=0;i<resultList.length;i++){
+            dateRegexList.push(regexEscape(resultList[i]));
+            dateRegexList.push('(');
+            dateRegexList.push(parseRulesRegex[dateComponentsOrder[i]]);
+            dateRegexList.push(')');
+        }
+        var dateRegex = new RegExp(dateRegexList.join(''));
+        //
+        var matchResult = dateString.match(dateRegex);
+        var dateComponents = [0,0,0,0,0,0,0];
+        if(matchResult){
+            for(var j=1;j<matchResult.length;j++){
+                var dateOrder = dateComponentsOrder[j-1];
+                dateComponents[dateOrder] = parseInt(matchResult[j]);
+            }
+        }
+        return new Date(dateComponents[0],dateComponents[1]-1,dateComponents[2],dateComponents[3],dateComponents[4],dateComponents[5],dateComponents[6],dateComponents[7]);
     }
     function dateEquals(date0,date1){
         return date0.getTime() === date1.getTime();
     }
-    function DateUtil(){
-        //获取凌晨0点的Date对象
-        this.constructor.prototype.getDayBreak = getDayBreak;
-        //增加n天,负数为减天数
-        this.constructor.prototype.addDay = addDay;
-        //格式化日期
-        this.constructor.prototype.format = format;
-        //解析日期
-        this.constructor.prototype.parse = parseDate;
-        //判断两个对象相等
-        this.constructor.prototype.equals = dateEquals;
-    }
+    function DateUtil(){}
     module.extends(DateUtil,Object);
+    //获取凌晨0点的Date对象
+    DateUtil.prototype.getDayBreak = getDayBreak;
+    //增加n天,负数为减天数
+    DateUtil.prototype.addDay = addDay;
+    //格式化日期
+    DateUtil.prototype.format = format;
+    //解析日期
+    DateUtil.prototype.parse = parseDate;
+    //判断两个对象相等
+    DateUtil.prototype.equals = dateEquals;
     register("$date",function(){
         return new DateUtil();
     });
@@ -643,6 +701,18 @@ window.pck = {};
         }
         return resultStringList.join("");
     }
+    function regexEscape(text){
+        //* . ? + $ ^ [ ] ( ) { } | \ /
+        var escapeStr = '*.?+$^[](){}|\\/-';
+        var result = [];
+        for(var i=0;i<text.length;i++){
+            if(escapeStr.indexOf(text[i]) > -1){
+                result.push('\\');
+            }
+            result.push(text[i]);
+        }
+        return result.join('');
+    }
     function camelCasify(word){
         var regex = /[a-zA-Z0-9\$]+/g;
         var wordList = [];
@@ -713,30 +783,28 @@ window.pck = {};
         }
         return wordList.join('_');
     }
-    function StringUtil(){
-    console.log("StringUtil init");
-        //删除字符串两边的指定字符
-        this.constructor.prototype.trim = trim;
-        //重复n次字符串
-        this.constructor.prototype.repeat = repeat;
-        //填充两边
-        this.constructor.prototype.padBoth = padBoth;
-        //填充左边
-        this.constructor.prototype.padLeft = padLeft;
-        //填充右边
-        this.constructor.prototype.padRight = padRight;
-        //近似均匀地填充两边
-        this.constructor.prototype.pad = pad;
-        //渲染模板函数:{{}}
-        this.constructor.prototype.render = render;
-        //转变为驼峰标识
-        this.constructor.prototype.camelCasify = camelCasify;
-        //转变为减号连接
-        this.constructor.prototype.kebabCasify = kebabCasify;
-        //转变为下划线连接
-        this.constructor.prototype.snackCasify = snackCasify;
-    }
+    function StringUtil(){}
     module.extends(StringUtil,Object);
+    //删除字符串两边的指定字符
+    StringUtil.prototype.trim = trim;
+    //重复n次字符串
+    StringUtil.prototype.repeat = repeat;
+    //填充两边
+    StringUtil.prototype.padBoth = padBoth;
+    //填充左边
+    StringUtil.prototype.padLeft = padLeft;
+    //填充右边
+    StringUtil.prototype.padRight = padRight;
+    //近似均匀地填充两边
+    StringUtil.prototype.pad = pad;
+    //渲染模板函数:{{}}
+    StringUtil.prototype.render = render;
+    //转变为驼峰标识
+    StringUtil.prototype.camelCasify = camelCasify;
+    //转变为减号连接
+    StringUtil.prototype.kebabCasify = kebabCasify;
+    //转变为下划线连接
+    StringUtil.prototype.snackCasify = snackCasify;
     register("$string",function(){
         return new StringUtil();
     });
@@ -752,26 +820,24 @@ window.pck = {};
     function isFloat(number){
         return isNumber(number) && 0 !== number % 1;
     }
-    function NumberUtil(){
-        //判断是不是整数
-        this.constructor.prototype.isNumber = isNumber;
-        //判断是不是整数
-        this.constructor.prototype.isInteger = isInteger;
-        //判断是不是浮点数
-        this.constructor.prototype.isFloat = isFloat;
-    }
+    function NumberUtil(){}
     module.extends(NumberUtil,Object);
+    //判断是不是整数
+    NumberUtil.prototype.isNumber = isNumber;
+    //判断是不是整数
+    NumberUtil.prototype.isInteger = isInteger;
+    //判断是不是浮点数
+    NumberUtil.prototype.isFloat = isFloat;
     register("$number",function(){
         return new NumberUtil();
     });
     /**
      *  $array 数组方法
      * */
-    function ArrayUtil(){
-        this.constructor.prototype.slice = Function.call.bind(Array.prototype.slice);
-        this.constructor.prototype.forEach = Function.call.bind(Array.prototype.forEach);
-    }
+    function ArrayUtil(){}
     module.extends(ArrayUtil,Object);
+    ArrayUtil.prototype.slice = Function.call.bind(Array.prototype.slice);
+    ArrayUtil.prototype.forEach = Function.call.bind(Array.prototype.forEach);
     register("$array",function(){
         return new ArrayUtil();
     });
