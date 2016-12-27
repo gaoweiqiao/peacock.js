@@ -306,37 +306,37 @@ window.pck = {};
     /**
      * 工具类
      * */
-    //function transform(data,rules){
-    //    /**
-    //     * rules:{
-    //     *      'dataKeyPath':{
-    //     *          name:'transformedKeyPath',
-    //     *          type:Number
-    //     *      }
-    //     *      or
-    //     *      'dataKeyPath':'transformedKeyPath'
-    //     * }
-    //     * */
-    //    if('object' === typeof data){
-    //        for(var originalKeyPath in rules){
-    //            if (rules.hasOwnProperty(originalKeyPath)){
-    //                var keyPathList = keyPath(originalKeyPath);
-    //                var cursor = data;
-    //                for(var i=0;i<keyPathList.length;i++){
-    //                    if(Array.isArray(cursor)){
-    //                        cursor.forEach(function(item){
-    //
-    //                        });
-    //                    }else{
-    //
-    //                    }
-    //                }
-    //            }
-    //
-    //        }
-    //    }
-    //    return data;
-    //}
+    function transform(data,rules){
+        /**
+         * rules:{
+         *      'dataKeyPath':{
+         *          name:'transformedKeyPath',
+         *          type:Number
+         *      }
+         *      or
+         *      'dataKeyPath':'transformedKeyPath'
+         * }
+         * */
+        if('object' === typeof data){
+            for(var originalKeyPath in rules){
+                if (rules.hasOwnProperty(originalKeyPath)){
+                    var keyPathList = keyPath(originalKeyPath);
+                    var cursor = data;
+                    for(var i=0;i<keyPathList.length;i++){
+                        if(Array.isArray(cursor)){
+                            cursor.forEach(function(item){
+
+                            });
+                        }else{
+
+                        }
+                    }
+                }
+
+            }
+        }
+        return data;
+    }
     function Util(){
     }
     module.extends(Util,Object);
